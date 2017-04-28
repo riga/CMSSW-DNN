@@ -1,4 +1,5 @@
 <use name="Python" />
+<use name="DNN/Base" />
 <Flags CXXFLAGS="-g -O0" />
 <export>
     <lib name="1" />
