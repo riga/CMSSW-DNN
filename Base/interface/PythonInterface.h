@@ -39,6 +39,7 @@ public:
 
     PyObject* get(const std::string& name) const;
     PyObject* call(PyObject* callable, PyObject* args = 0) const;
+    PyObject* call(const std::string& name, PyObject* args = 0) const;
 
     void runScript(const std::string& script);
     void runFile(const std::string& filename);

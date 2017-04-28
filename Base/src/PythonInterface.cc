@@ -48,11 +48,16 @@ PyObject* PythonInterface::get(const std::string& name) const
 {
     checkContext();
 
-    return PyDict_GetItemString(context, name.c_str());
+    PyObject* obj = PyDict_GetItemString(context, name.c_str());
+    except(obj, "could not get object '" + name + "'");
+
+    return obj;
 }
 
 PyObject* PythonInterface::call(PyObject* callable, PyObject* args) const
 {
+    checkContext();
+
     // check if args is a tuple
     size_t nArgs = 0;
     if (args)
@@ -69,6 +74,15 @@ PyObject* PythonInterface::call(PyObject* callable, PyObject* args) const
     // simply call the callable with args and check for errors afterwards
     PyObject* result = PyObject_CallObject(callable, args);
     except(result, "error during invocation of callable");
+
+    return result;
+}
+
+PyObject* PythonInterface::call(const std::string& name, PyObject* args) const
+{
+    PyObject* callable = get(name);
+    PyObject* result = call(callable, args);
+    release(callable);
 
     return result;
 }
