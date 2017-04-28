@@ -46,16 +46,8 @@ public:
     PyObject* createTuple(const std::vector<int>& v) const;
     PyObject* createTuple(const std::vector<double>& v) const;
 
-    inline void setLogLevel(LogLevel& level)
-    {
-        log(DEBUG, "set log level to " + std::to_string(level));
-        logLevel = level;
-    }
-
-    inline LogLevel getLogLevel() const
-    {
-        return logLevel;
-    }
+    void setLogLevel(LogLevel& level);
+    LogLevel getLogLevel() const;
 
 private:
     static size_t nConsumers;

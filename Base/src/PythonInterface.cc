@@ -93,6 +93,17 @@ PyObject* PythonInterface::createTuple(const std::vector<double>& v) const
     return tpl;
 }
 
+void PythonInterface::setLogLevel(LogLevel& level)
+{
+    log(DEBUG, "set log level to " + std::to_string(level));
+    logLevel = level;
+}
+
+LogLevel PythonInterface::getLogLevel() const
+{
+    return logLevel;
+}
+
 void PythonInterface::runScript(const std::string& script)
 {
     log(INFO, "run script");
