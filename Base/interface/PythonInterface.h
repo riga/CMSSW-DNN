@@ -6,6 +6,7 @@
 #define DNN_BASE_PYTHONINTERFACE_H
 
 #include <fstream>
+#include <iostream>
 #include <stdexcept>
 #include <string>
 #include <vector>
@@ -30,20 +31,22 @@ private:
     PyObject* context_;
     LogLevel logLevel_;
 
+    void log_(const LogLevel& level, const std::string& msg) const;
+
 public:
     PythonInterface();
     virtual ~PythonInterface();
 
-    static void initialize();
-    static void finalize();
+    void initialize() const;
+    void finalize() const;
 
-    static void except(PyObject* obj, const std::string& msg);
-    static void releaseObject(PyObject*& ptr);
+    void except(PyObject* obj, const std::string& msg) const;
+    void releaseObject(PyObject*& ptr) const;
 
-    static PyObject* call(PyObject* callable, PyObject* args = 0);
+    PyObject* call(PyObject* callable, PyObject* args = 0) const;
 
-    static PyObject* createTuple(const std::vector<int>& v);
-    static PyObject* createTuple(const std::vector<double>& v);
+    PyObject* createTuple(const std::vector<int>& v) const;
+    PyObject* createTuple(const std::vector<double>& v) const;
 
     bool hasContext() const;
     void checkContext() const;
@@ -52,8 +55,9 @@ public:
     void runScript(const std::string& script);
     void runFile(const std::string& filename);
 
-    inline void setLogLevel(LogLevel level)
+    inline void setLogLevel(LogLevel& level)
     {
+        log_(DEBUG, "set log level to " + std::to_string(level));
         logLevel_ = level;
     }
 

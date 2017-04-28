@@ -17,18 +17,20 @@ PythonInterface::~PythonInterface()
 {
 }
 
-void PythonInterface::initialize()
+void PythonInterface::initialize() const
 {
+    log_(INFO, "initialize python");
     PyEval_InitThreads();
     Py_Initialize();
 }
 
-void PythonInterface::finalize()
+void PythonInterface::finalize() const
 {
+    log_(INFO, "finalize python");
     Py_Finalize();
 }
 
-void PythonInterface::except(PyObject* obj, const std::string& msg)
+void PythonInterface::except(PyObject* obj, const std::string& msg) const
 {
     // in Python we know that an error occured when an object is NULL
     if (obj == NULL)
@@ -42,14 +44,27 @@ void PythonInterface::except(PyObject* obj, const std::string& msg)
     }
 }
 
-void PythonInterface::releaseObject(PyObject*& ptr)
+void PythonInterface::releaseObject(PyObject*& ptr) const
 {
     Py_XDECREF(ptr);
     ptr = 0;
 }
 
-PyObject* PythonInterface::call(PyObject* callable, PyObject* args)
+PyObject* PythonInterface::call(PyObject* callable, PyObject* args) const
 {
+    // check if args is a tuple
+    size_t nArgs = 0;
+    if (args)
+    {
+        if (!PyTuple_Check(args))
+        {
+            throw std::runtime_error("args for function call is not a tuple");
+        }
+        nArgs = PyTuple_Size(args);
+    }
+
+    log_(DEBUG, "invoke callable with " + std::to_string(nArgs) + " argument(s)");
+
     // simply call the callable with args and check for errors afterwards
     PyObject* result = PyObject_CallObject(callable, args);
     except(result, "error during invocation of callable");
@@ -57,7 +72,7 @@ PyObject* PythonInterface::call(PyObject* callable, PyObject* args)
     return result;
 }
 
-PyObject* PythonInterface::createTuple(const std::vector<int>& v)
+PyObject* PythonInterface::createTuple(const std::vector<int>& v) const
 {
     PyObject* tpl = PyTuple_New(v.size());
     for (size_t i = 0; i < v.size(); i++)
@@ -67,7 +82,7 @@ PyObject* PythonInterface::createTuple(const std::vector<int>& v)
     return tpl;
 }
 
-PyObject* PythonInterface::createTuple(const std::vector<double>& v)
+PyObject* PythonInterface::createTuple(const std::vector<double>& v) const
 {
     PyObject* tpl = PyTuple_New(v.size());
     for (size_t i = 0; i < v.size(); i++)
@@ -92,7 +107,7 @@ void PythonInterface::checkContext() const
 
 void PythonInterface::startContext()
 {
-    // TODO: remember the main object?
+    log_(INFO, "start context");
 
     if (hasContext())
     {
@@ -100,6 +115,7 @@ void PythonInterface::startContext()
     }
 
     // create the main module and globals dict
+    // TODO: remember the main object?
     PyObject* main = PyImport_AddModule("__main__");
     PyObject* globals = PyModule_GetDict(main);
 
@@ -113,6 +129,8 @@ void PythonInterface::startContext()
 
 void PythonInterface::runScript(const std::string& script)
 {
+    log_(INFO, "run script");
+
     checkContext();
 
     // run the script in our context
@@ -125,6 +143,8 @@ void PythonInterface::runScript(const std::string& script)
 
 void PythonInterface::runFile(const std::string& filename)
 {
+    log_(INFO, "run file from " + filename);
+
     // read the content of the file
     std::ifstream ifs(filename);
     std::string script;
@@ -132,6 +152,21 @@ void PythonInterface::runFile(const std::string& filename)
 
     // run the script
     runScript(script);
+}
+
+void PythonInterface::log_(const LogLevel& level, const std::string& msg) const
+{
+    if (level >= logLevel_)
+    {
+        if (level <= INFO)
+        {
+            std::cout << "PythonInterface: " << msg << std::endl;
+        }
+        else
+        {
+            std::cerr << "PythonInterface: " << msg << std::endl;
+        }
+    }
 }
 
 } // namespace DNN
