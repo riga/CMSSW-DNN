@@ -1,5 +1,8 @@
 /*
  * Python interface.
+ *
+ * Author:
+ *   Marcel Rieger
  */
 
 #ifndef DNN_BASE_PYTHONINTERFACE_H
@@ -27,45 +30,50 @@ enum LogLevel
 
 class PythonInterface
 {
-private:
-    PyObject* context_;
-    LogLevel logLevel_;
-
-    void log_(const LogLevel& level, const std::string& msg) const;
-
 public:
-    PythonInterface();
+    PythonInterface(const LogLevel& level = INFO);
     virtual ~PythonInterface();
 
-    void initialize() const;
-    void finalize() const;
-
     void except(PyObject* obj, const std::string& msg) const;
-    void releaseObject(PyObject*& ptr) const;
+    void release(PyObject*& ptr) const;
 
+    PyObject* get(const std::string& name) const;
     PyObject* call(PyObject* callable, PyObject* args = 0) const;
+
+    void runScript(const std::string& script);
+    void runFile(const std::string& filename);
 
     PyObject* createTuple(const std::vector<int>& v) const;
     PyObject* createTuple(const std::vector<double>& v) const;
+
+    inline void setLogLevel(LogLevel& level)
+    {
+        log(DEBUG, "set log level to " + std::to_string(level));
+        logLevel = level;
+    }
+
+    inline LogLevel getLogLevel() const
+    {
+        return logLevel;
+    }
+
+private:
+    static size_t nConsumers;
+
+    PyObject* context;
+    LogLevel logLevel;
+
+    void initialize() const;
+    void finalize() const;
 
     bool hasContext() const;
     void checkContext() const;
     void startContext();
 
-    void runScript(const std::string& script);
-    void runFile(const std::string& filename);
-
-    inline void setLogLevel(LogLevel& level)
-    {
-        log_(DEBUG, "set log level to " + std::to_string(level));
-        logLevel_ = level;
-    }
-
-    inline LogLevel getLogLevel() const
-    {
-        return logLevel_;
-    }
+    void log(const LogLevel& level, const std::string& msg) const;
 };
+
+size_t PythonInterface::nConsumers = 0;
 
 } // namepace DNN
 

@@ -1,5 +1,8 @@
 /*
  * Python interface.
+ *
+ * Author:
+ *   Marcel Rieger
  */
 
 #include "DNN/Base/interface/PythonInterface.h"
@@ -7,27 +10,18 @@
 namespace DNN
 {
 
-PythonInterface::PythonInterface()
-    : context_(0)
-    , logLevel_(INFO)
+PythonInterface::PythonInterface(const LogLevel& level)
+    : context(0)
+    , logLevel(level)
 {
+    initialize();
+    startContext();
 }
 
 PythonInterface::~PythonInterface()
 {
-}
-
-void PythonInterface::initialize() const
-{
-    log_(INFO, "initialize python");
-    PyEval_InitThreads();
-    Py_Initialize();
-}
-
-void PythonInterface::finalize() const
-{
-    log_(INFO, "finalize python");
-    Py_Finalize();
+    release(context);
+    finalize();
 }
 
 void PythonInterface::except(PyObject* obj, const std::string& msg) const
@@ -44,10 +38,17 @@ void PythonInterface::except(PyObject* obj, const std::string& msg) const
     }
 }
 
-void PythonInterface::releaseObject(PyObject*& ptr) const
+void PythonInterface::release(PyObject*& ptr) const
 {
     Py_XDECREF(ptr);
     ptr = 0;
+}
+
+PyObject* PythonInterface::get(const std::string& name) const
+{
+    checkContext();
+
+    return PyDict_GetItemString(context, name.c_str());
 }
 
 PyObject* PythonInterface::call(PyObject* callable, PyObject* args) const
@@ -63,7 +64,7 @@ PyObject* PythonInterface::call(PyObject* callable, PyObject* args) const
         nArgs = PyTuple_Size(args);
     }
 
-    log_(DEBUG, "invoke callable with " + std::to_string(nArgs) + " argument(s)");
+    log(DEBUG, "invoke callable with " + std::to_string(nArgs) + " argument(s)");
 
     // simply call the callable with args and check for errors afterwards
     PyObject* result = PyObject_CallObject(callable, args);
@@ -92,9 +93,62 @@ PyObject* PythonInterface::createTuple(const std::vector<double>& v) const
     return tpl;
 }
 
+void PythonInterface::runScript(const std::string& script)
+{
+    log(INFO, "run script");
+
+    checkContext();
+
+    // run the script in our context
+    PyObject* result = PyRun_String(script.c_str(), Py_file_input, context, context);
+    except(result, "error during execution of script");
+
+    // decrease borrowed references
+    release(result);
+}
+
+void PythonInterface::runFile(const std::string& filename)
+{
+    log(INFO, "run file from " + filename);
+
+    // read the content of the file
+    std::ifstream ifs(filename);
+    std::string script;
+    script.assign(std::istreambuf_iterator<char>(ifs), std::istreambuf_iterator<char>());
+
+    // run the script
+    runScript(script);
+}
+
+void PythonInterface::initialize() const
+{
+    log(INFO, "initialize");
+    if (nConsumers == 0 && !Py_IsInitialized())
+    {
+        PyEval_InitThreads();
+        Py_Initialize();
+    }
+    nConsumers++;
+    log(INFO, std::to_string(nConsumers) + " consumers");
+}
+
+void PythonInterface::finalize() const
+{
+    log(INFO, "finalize");
+    if (nConsumers == 1 && Py_IsInitialized())
+    {
+        Py_Finalize();
+    }
+    if (nConsumers != 0)
+    {
+        nConsumers--;
+    }
+    log(INFO, std::to_string(nConsumers) + " consumers");
+}
+
 bool PythonInterface::hasContext() const
 {
-    return context_ != 0;
+    return context != 0;
 }
 
 void PythonInterface::checkContext() const
@@ -107,7 +161,7 @@ void PythonInterface::checkContext() const
 
 void PythonInterface::startContext()
 {
-    log_(INFO, "start context");
+    log(INFO, "start context");
 
     if (hasContext())
     {
@@ -121,42 +175,15 @@ void PythonInterface::startContext()
 
     // copy the global dict to create a new reference rather than borrowing one
     // this will be our context
-    context_ = PyDict_Copy(globals);
+    context = PyDict_Copy(globals);
 
     // decrease borrowed references
-    releaseObject(globals);
+    release(globals);
 }
 
-void PythonInterface::runScript(const std::string& script)
+void PythonInterface::log(const LogLevel& level, const std::string& msg) const
 {
-    log_(INFO, "run script");
-
-    checkContext();
-
-    // run the script in our context
-    PyObject* result = PyRun_String(script.c_str(), Py_file_input, context_, context_);
-    except(result, "error during execution of script");
-
-    // decrease borrowed references
-    releaseObject(result);
-}
-
-void PythonInterface::runFile(const std::string& filename)
-{
-    log_(INFO, "run file from " + filename);
-
-    // read the content of the file
-    std::ifstream ifs(filename);
-    std::string script;
-    script.assign(std::istreambuf_iterator<char>(ifs), std::istreambuf_iterator<char>());
-
-    // run the script
-    runScript(script);
-}
-
-void PythonInterface::log_(const LogLevel& level, const std::string& msg) const
-{
-    if (level >= logLevel_)
+    if (level >= logLevel)
     {
         if (level <= INFO)
         {
