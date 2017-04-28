@@ -21,5 +21,5 @@ scram b -j
 
 #### Authors
 
-- [mailto:marcel.rieger@cern.ch](Marcel Rieger): Tensorflow interface
-- [mailto:marco.harrendorf@cern.ch](Marco Harrendorf): Tensorflow bundle
+- [Marcel Rieger](mailto:marcel.rieger@cern.ch): Tensorflow interface
+- [Marco Harrendorf](mailto:marco.harrendorf@cern.ch): Tensorflow bundle
