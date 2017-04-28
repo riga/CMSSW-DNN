@@ -8,6 +8,7 @@
 #include <fstream>
 #include <stdexcept>
 #include <string>
+#include <vector>
 
 #include "Python.h"
 
@@ -37,22 +38,26 @@ public:
     static void finalize();
 
     static void except(PyObject* obj, const std::string& msg);
+    static void releaseObject(PyObject*& ptr);
 
-    bool hasContext();
-    void checkContext();
+    static PyObject* call(PyObject* callable, PyObject* args = 0);
+
+    static PyObject* createTuple(const std::vector<int>& v);
+    static PyObject* createTuple(const std::vector<double>& v);
+
+    bool hasContext() const;
+    void checkContext() const;
     void startContext();
 
     void runScript(const std::string& script);
     void runFile(const std::string& filename);
-
-    PyObject* call(PyObject* callable, PyObject* args = 0);
 
     inline void setLogLevel(LogLevel level)
     {
         logLevel_ = level;
     }
 
-    inline LogLevel getLogLevel()
+    inline LogLevel getLogLevel() const
     {
         return logLevel_;
     }

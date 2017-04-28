@@ -42,12 +42,47 @@ void PythonInterface::except(PyObject* obj, const std::string& msg)
     }
 }
 
-bool PythonInterface::hasContext()
+void PythonInterface::releaseObject(PyObject*& ptr)
+{
+    Py_XDECREF(ptr);
+    ptr = 0;
+}
+
+PyObject* PythonInterface::call(PyObject* callable, PyObject* args)
+{
+    // simply call the callable with args and check for errors afterwards
+    PyObject* result = PyObject_CallObject(callable, args);
+    except(result, "error during invocation of callable");
+
+    return result;
+}
+
+PyObject* PythonInterface::createTuple(const std::vector<int>& v)
+{
+    PyObject* tpl = PyTuple_New(v.size());
+    for (size_t i = 0; i < v.size(); i++)
+    {
+        PyTuple_SetItem(tpl, i, PyInt_FromLong(v[i]));
+    }
+    return tpl;
+}
+
+PyObject* PythonInterface::createTuple(const std::vector<double>& v)
+{
+    PyObject* tpl = PyTuple_New(v.size());
+    for (size_t i = 0; i < v.size(); i++)
+    {
+        PyTuple_SetItem(tpl, i, PyFloat_FromDouble(v[i]));
+    }
+    return tpl;
+}
+
+bool PythonInterface::hasContext() const
 {
     return context_ != 0;
 }
 
-void PythonInterface::checkContext()
+void PythonInterface::checkContext() const
 {
     if (!hasContext())
     {
@@ -73,7 +108,7 @@ void PythonInterface::startContext()
     context_ = PyDict_Copy(globals);
 
     // decrease borrowed references
-    Py_DECREF(globals);
+    releaseObject(globals);
 }
 
 void PythonInterface::runScript(const std::string& script)
@@ -85,7 +120,7 @@ void PythonInterface::runScript(const std::string& script)
     except(result, "error during execution of script");
 
     // decrease borrowed references
-    Py_DECREF(result);
+    releaseObject(result);
 }
 
 void PythonInterface::runFile(const std::string& filename)
@@ -97,15 +132,6 @@ void PythonInterface::runFile(const std::string& filename)
 
     // run the script
     runScript(script);
-}
-
-PyObject* PythonInterface::call(PyObject* callable, PyObject* args)
-{
-    // simply call the callable with args and check for errors afterwards
-    PyObject* result = PyObject_CallObject(callable, args);
-    except(result, "error during invocation of callable");
-
-    return result;
 }
 
 } // namespace DNN
