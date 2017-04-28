@@ -1,12 +1,12 @@
 /*
- * Generic Tensorflow model.
+ * Generic Tensorflow graph representation.
  *
  * Author:
  *   Marcel Rieger
  */
 
-#ifndef DNN_TENSORFLOW_MODEL_H
-#define DNN_TENSORFLOW_MODEL_H
+#ifndef DNN_TENSORFLOW_GRAPH_H
+#define DNN_TENSORFLOW_GRAPH_H
 
 #include <fstream>
 #include <stdexcept>
@@ -17,12 +17,12 @@
 namespace DNN
 {
 
-class Model {
+class TensorflowGraph {
 public:
-    Model();
-    virtual ~Model();
+    TensorflowGraph();
+    virtual ~TensorflowGraph();
 
-    void loadModel();
+    void load();
 
     void defineInputs(const std::vector<std::string>& inputs);
     void defineOutputs(const std::vector<std::string>& outputs);
@@ -72,4 +72,4 @@ def call(*values):\n\
 
 } // namepace DNN
 
-#endif // DNN_TENSORFLOW_MODEL_H
+#endif // DNN_TENSORFLOW_GRAPH_H
