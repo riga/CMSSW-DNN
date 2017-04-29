@@ -11,8 +11,8 @@ namespace DNN
 {
 
 PythonInterface::PythonInterface(const LogLevel& level)
-    : context(0)
-    , logLevel(level)
+    : logger(Logger("PythonInterface", level))
+    , context(0)
 {
     initialize();
     startContext();
@@ -60,7 +60,7 @@ PyObject* PythonInterface::call(PyObject* callable, PyObject* args) const
 
     // check if args is a tuple
     size_t nArgs = 0;
-    if (args)
+    if (args != NULL)
     {
         if (!PyTuple_Check(args))
         {
@@ -69,7 +69,7 @@ PyObject* PythonInterface::call(PyObject* callable, PyObject* args) const
         nArgs = PyTuple_Size(args);
     }
 
-    log(DEBUG, "invoke callable with " + std::to_string(nArgs) + " argument(s)");
+    logger.debug("invoke callable with " + std::to_string(nArgs) + " argument(s)");
 
     // simply call the callable with args and check for errors afterwards
     PyObject* result = PyObject_CallObject(callable, args);
@@ -80,9 +80,37 @@ PyObject* PythonInterface::call(PyObject* callable, PyObject* args) const
 
 PyObject* PythonInterface::call(const std::string& name, PyObject* args) const
 {
+    logger.debug("invoke callable '" + name + "'");
+
     PyObject* callable = get(name);
     PyObject* result = call(callable, args);
-    release(callable);
+
+    return result;
+}
+
+PyObject* PythonInterface::call(const std::string& name, int arg) const
+{
+    PyObject* args = Py_BuildValue("(i)", arg);
+    PyObject* result = call(name, args);
+    release(args);
+
+    return result;
+}
+
+PyObject* PythonInterface::call(const std::string& name, double arg) const
+{
+    PyObject* args = Py_BuildValue("(f)", arg);
+    PyObject* result = call(name, args);
+    release(args);
+
+    return result;
+}
+
+PyObject* PythonInterface::call(const std::string& name, const std::string& arg) const
+{
+    PyObject* args = Py_BuildValue("(s)", arg.c_str());
+    PyObject* result = call(name, args);
+    release(args);
 
     return result;
 }
@@ -107,34 +135,31 @@ PyObject* PythonInterface::createTuple(const std::vector<double>& v) const
     return tpl;
 }
 
-void PythonInterface::setLogLevel(LogLevel& level)
+PyObject* PythonInterface::createTuple(const std::vector<std::string>& v) const
 {
-    log(DEBUG, "set log level to " + std::to_string(level));
-    logLevel = level;
-}
-
-LogLevel PythonInterface::getLogLevel() const
-{
-    return logLevel;
+    PyObject* tpl = PyTuple_New(v.size());
+    for (size_t i = 0; i < v.size(); i++)
+    {
+        PyTuple_SetItem(tpl, i, PyString_FromString(v[i].c_str()));
+    }
+    return tpl;
 }
 
 void PythonInterface::runScript(const std::string& script)
 {
-    log(INFO, "run script");
+    logger.info("run script");
 
     checkContext();
 
     // run the script in our context
     PyObject* result = PyRun_String(script.c_str(), Py_file_input, context, context);
     except(result, "error during execution of script");
-
-    // decrease borrowed references
     release(result);
 }
 
 void PythonInterface::runFile(const std::string& filename)
 {
-    log(INFO, "run file from " + filename);
+    logger.info("run file from " + filename);
 
     // read the content of the file
     std::ifstream ifs(filename);
@@ -147,19 +172,19 @@ void PythonInterface::runFile(const std::string& filename)
 
 void PythonInterface::initialize() const
 {
-    log(INFO, "initialize");
+    logger.info("initialize");
     if (nConsumers == 0 && !Py_IsInitialized())
     {
         PyEval_InitThreads();
         Py_Initialize();
     }
     nConsumers++;
-    log(INFO, std::to_string(nConsumers) + " consumers");
+    logger.debug(std::to_string(nConsumers) + " consumers");
 }
 
 void PythonInterface::finalize() const
 {
-    log(INFO, "finalize");
+    logger.info("finalize");
     if (nConsumers == 1 && Py_IsInitialized())
     {
         Py_Finalize();
@@ -168,7 +193,11 @@ void PythonInterface::finalize() const
     {
         nConsumers--;
     }
-    log(INFO, std::to_string(nConsumers) + " consumers");
+    else
+    {
+        logger.warning("number of consumers cannot be negative");
+    }
+    logger.debug(std::to_string(nConsumers) + " consumers");
 }
 
 bool PythonInterface::hasContext() const
@@ -186,39 +215,21 @@ void PythonInterface::checkContext() const
 
 void PythonInterface::startContext()
 {
-    log(INFO, "start context");
+    logger.info("start context");
 
     if (hasContext())
     {
         throw std::runtime_error("python context already started");
     }
 
-    // create the main module and globals dict
-    // TODO: remember the main object?
+    // create the main module
     PyObject* main = PyImport_AddModule("__main__");
-    PyObject* globals = PyModule_GetDict(main);
 
-    // copy the global dict to create a new reference rather than borrowing one
-    // this will be our context
-    context = PyDict_Copy(globals);
+    // define the globals of the main module as our context
+    context = PyModule_GetDict(main);
 
-    // decrease borrowed references
-    release(globals);
-}
-
-void PythonInterface::log(const LogLevel& level, const std::string& msg) const
-{
-    if (level >= logLevel)
-    {
-        if (level <= INFO)
-        {
-            std::cout << "PythonInterface: " << msg << std::endl;
-        }
-        else
-        {
-            std::cerr << "PythonInterface: " << msg << std::endl;
-        }
-    }
+    // since PyModule_GetDict returns a borrowed reference, increase the count to own one
+    Py_INCREF(context);
 }
 
 } // namespace DNN

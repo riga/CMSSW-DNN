@@ -16,17 +16,10 @@
 
 #include "Python.h"
 
+#include "DNN/Base/interface/Logger.h"
+
 namespace DNN
 {
-
-enum LogLevel
-{
-    ALL = 0,
-    DEBUG,
-    INFO,
-    WARNING,
-    ERROR
-};
 
 class PythonInterface
 {
@@ -37,24 +30,23 @@ public:
     void except(PyObject* obj, const std::string& msg) const;
     void release(PyObject*& ptr) const;
 
-    PyObject* get(const std::string& name) const;
-    PyObject* call(PyObject* callable, PyObject* args = 0) const;
-    PyObject* call(const std::string& name, PyObject* args = 0) const;
+    PyObject* get(const std::string& name) const; // borrowed reference
+    PyObject* call(PyObject* callable, PyObject* args = NULL) const; // new reference
+    PyObject* call(const std::string& name, PyObject* args = NULL) const; // new reference
+    PyObject* call(const std::string& name, int arg) const; // new reference
+    PyObject* call(const std::string& name, double arg) const; // new reference
+    PyObject* call(const std::string& name, const std::string& arg) const; // new reference
 
     void runScript(const std::string& script);
     void runFile(const std::string& filename);
 
-    PyObject* createTuple(const std::vector<int>& v) const;
-    PyObject* createTuple(const std::vector<double>& v) const;
-
-    void setLogLevel(LogLevel& level);
-    LogLevel getLogLevel() const;
+    PyObject* createTuple(const std::vector<int>& v) const; // new reference
+    PyObject* createTuple(const std::vector<double>& v) const; // new reference
+    PyObject* createTuple(const std::vector<std::string>& v) const; // new reference
 
 private:
-    static size_t nConsumers;
-
+    Logger logger;
     PyObject* context;
-    LogLevel logLevel;
 
     void initialize() const;
     void finalize() const;
@@ -63,7 +55,7 @@ private:
     void checkContext() const;
     void startContext();
 
-    void log(const LogLevel& level, const std::string& msg) const;
+    static size_t nConsumers;
 };
 
 size_t PythonInterface::nConsumers = 0;
