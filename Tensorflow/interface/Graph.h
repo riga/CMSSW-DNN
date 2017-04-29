@@ -12,23 +12,35 @@
 #include <stdexcept>
 #include <string>
 
+#include "DNN/Base/interface/Logger.h"
 #include "DNN/Base/interface/PythonInterface.h"
 
 namespace DNN
 {
 
-class TensorflowGraph {
+class TensorflowGraph
+{
 public:
     TensorflowGraph();
+    TensorflowGraph(const std::string& filename);
+    TensorflowGraph(LogLevel logLevel);
+    TensorflowGraph(const std::string& filename, LogLevel logLevel);
     virtual ~TensorflowGraph();
 
-    void load();
-
+    // void load(const std::string& filename);
+    void load(std::string filename);
     void defineInputs(const std::vector<std::string>& inputs);
     void defineOutputs(const std::vector<std::string>& outputs);
+    void startSession();
+    int call();
+
+    PythonInterface getPythonInterface();
 
 private:
-    PythonInterface* python;
+    void init(const std::string& filename);
+
+    Logger logger;
+    PythonInterface python;
 
     size_t nInputs;
     size_t nOutputs;
@@ -52,11 +64,11 @@ def load_graph(path):\n\
     saver = tf.train.import_meta_graph(path)\n\
     graph = tf.get_default_graph()\n\
 \n\
-def get_inputs(*names):\n\
+def define_inputs(*names):\n\
     global inputs\n\
     inputs = [graph.get_tensor_by_name(name) for name in names]\n\
 \n\
-def get_outputs(*names):\n\
+def define_outputs(*names):\n\
     global outputs\n\
     outputs = [graph.get_tensor_by_name(name) for name in names]\n\
 \n\
