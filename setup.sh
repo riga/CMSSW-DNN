@@ -12,7 +12,7 @@ action() {
 		else
 			wget http://www-ekp.physik.uni-karlsruhe.de/~harrendorf/tensorflow-cmssw8-0-26.tar.gz
 		fi
-		tar -zxvf tensorflow-cmssw8-0-26.tar.gz
+		tar -zxf tensorflow-cmssw8-0-26.tar.gz
 		mkdir -p python
 		mv tensorflow-cmssw8-0-26-patch1/site-packages/* python/
 		rm -rf tensorflow-cmssw8-0-26.tar.gz tensorflow-cmssw8-0-26-patch1/
