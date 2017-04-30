@@ -7,51 +7,67 @@
 
 #include "DNN/Tensorflow/interface/Graph.h"
 
-namespace DNN
+namespace dnn
 {
 
-TensorflowGraph::TensorflowGraph()
-    : logger(Logger("TensorflowGraph"))
+namespace tf
+{
+
+Graph::Graph()
+    : logger(Logger("tf::Graph"))
     , python()
-    , nInputs(0)
-    , nOutputs(0)
+    , pyInputs(0)
+    , pyOutputs(0)
+    , pyEvalArgs(0)
+    , pyEvalSession(0)
 {
     init("");
 }
 
-TensorflowGraph::TensorflowGraph(const std::string& filename)
-    : logger(Logger("TensorflowGraph"))
+Graph::Graph(const std::string& filename)
+    : logger(Logger("tf::Graph"))
     , python()
-    , nInputs(0)
-    , nOutputs(0)
+    , pyInputs(0)
+    , pyOutputs(0)
+    , pyEvalArgs(0)
+    , pyEvalSession(0)
 {
     init(filename);
 }
 
-TensorflowGraph::TensorflowGraph(LogLevel logLevel)
-    : logger(Logger("TensorflowGraph", logLevel))
+Graph::Graph(LogLevel logLevel)
+    : logger(Logger("tf::Graph", logLevel))
     , python(PythonInterface(logLevel))
-    , nInputs(0)
-    , nOutputs(0)
+    , pyInputs(0)
+    , pyOutputs(0)
+    , pyEvalArgs(0)
+    , pyEvalSession(0)
 {
     init("");
 }
 
-TensorflowGraph::TensorflowGraph(const std::string& filename, LogLevel logLevel)
-    : logger(Logger("TensorflowGraph", logLevel))
+Graph::Graph(const std::string& filename, LogLevel logLevel)
+    : logger(Logger("tf::Graph", logLevel))
     , python(PythonInterface(logLevel))
-    , nInputs(0)
-    , nOutputs(0)
+    , pyInputs(0)
+    , pyOutputs(0)
+    , pyEvalArgs(0)
+    , pyEvalSession(0)
 {
     init(filename);
 }
 
-TensorflowGraph::~TensorflowGraph()
+Graph::~Graph()
 {
+    // cleanup python objects
+    python.release(pyInputs);
+    python.release(pyOutputs);
+    python.release(pyEvalArgs);
 }
 
-void TensorflowGraph::init(const std::string& filename)
+void Graph::init(const std::string& filename)
 {
+    logger.debug("initialize graph");
     python.runScript(embeddedTensorflowScript);
 
     // update the python path to find tensorflow
@@ -64,53 +80,159 @@ void TensorflowGraph::init(const std::string& filename)
     PyObject* result2 = python.call("import_tf");
     python.release(result2);
 
+    // create the evaluation arguments
+    pyInputs = PyDict_New();
+    pyOutputs = PyDict_New();
+    pyEvalArgs = PyTuple_New(2);
+    PyTuple_SetItem(pyEvalArgs, 0, pyInputs);
+    Py_INCREF(pyInputs);
+    PyTuple_SetItem(pyEvalArgs, 1, pyOutputs);
+    Py_INCREF(pyOutputs);
+
     if (!filename.empty())
     {
         load(filename);
     }
 }
 
-
-void TensorflowGraph::load(std::string filename)
+Tensor* Graph::defineInput(Tensor* tensor)
 {
-    PyObject* result = python.call("load_graph", filename);
-    python.release(result);
+    if (tensor)
+    {
+        removeInput(tensor->getName());
+        inputs[tensor->getName()] = tensor;
+    }
+    return tensor;
 }
 
-void TensorflowGraph::defineInputs(const std::vector<std::string>& inputs)
+Tensor* Graph::defineOutput(Tensor* tensor)
 {
-    PyObject* args = python.createTuple(inputs);
-    PyObject* result = python.call("define_inputs", args);
-    python.release(result);
-    python.release(args);
-
-    nInputs = inputs.size();
+    if (tensor)
+    {
+        removeOutput(tensor->getName());
+        outputs[tensor->getName()] = tensor;
+    }
+    return tensor;
 }
 
-void TensorflowGraph::defineOutputs(const std::vector<std::string>& outputs)
+bool Graph::removeInput(const std::string& name)
 {
-    PyObject* args = python.createTuple(outputs);
-    PyObject* result = python.call("define_outputs", args);
-    python.release(result);
-    python.release(args);
-
-    nOutputs = outputs.size();
+    if (!hasInput(name))
+    {
+        return false;
+    }
+    inputs.erase(name);
+    return true;
 }
 
-void TensorflowGraph::startSession()
+bool Graph::removeOutput(const std::string& name)
 {
+    if (!hasOutput(name))
+    {
+        return false;
+    }
+    outputs.erase(name);
+    return true;
+}
+
+bool Graph::hasInput(const std::string& name) const
+{
+    return inputs.find(name) != inputs.end();
+}
+
+bool Graph::hasOutput(const std::string& name) const
+{
+    return outputs.find(name) != outputs.end();
+}
+
+Tensor* Graph::getInput(const std::string& name)
+{
+    if (!hasInput(name))
+    {
+        return 0;
+    }
+    return inputs.find(name)->second;
+}
+
+Tensor* Graph::getOutput(const std::string& name)
+{
+    if (!hasOutput(name))
+    {
+        return 0;
+    }
+    return outputs.find(name)->second;
+}
+
+void Graph::load(const std::string& filename)
+{
+    logger.info("load graph from " + filename);
+
     PyObject* result = python.call("start_session");
     python.release(result);
+
+    result = python.call("load_graph", filename);
+    python.release(result);
+
+    pyEvalSession = python.get("eval_session");
 }
 
-int TensorflowGraph::call()
+void Graph::buildArgs()
 {
-    return 27;
+    logger.debug("building evaluation args");
+
+    PyDict_Clear(pyInputs);
+    PyDict_Clear(pyOutputs);
+
+    for (std::map<std::string, Tensor*>::iterator it = inputs.begin(); it != inputs.end(); it++)
+    {
+        logger.debug("use array of tensor '" + it->first + "' as input");
+        if (it->second->isEmpty())
+        {
+            throw std::runtime_error("cannot set non-initialized tensor as input");
+        }
+        PyDict_SetItem(pyInputs, PyString_FromString(it->first.c_str()), it->second->data);
+    }
+
+    for (std::map<std::string, Tensor*>::iterator it = outputs.begin(); it != outputs.end(); it++)
+    {
+        logger.debug("use array of tensor '" + it->first + "' as output");
+        PyObject* item = it->second->isEmpty() ? Py_None : it->second->data;
+        PyDict_SetItem(pyOutputs, PyString_FromString(it->first.c_str()), item);
+    }
 }
 
-PythonInterface TensorflowGraph::getPythonInterface()
+void Graph::eval()
+{
+    logger.debug("evaluate");
+
+    if (!pyEvalSession || !pyEvalArgs)
+    {
+        throw std::runtime_error("cannot eval session, graph not loaded yet");
+    }
+
+    if (PyDict_Size(pyOutputs) == 0)
+    {
+        buildArgs();
+    }
+
+    // actual evaluation
+    python.call(pyEvalSession, pyEvalArgs);
+
+    // update output tensors
+    for (std::map<std::string, Tensor*>::iterator it = outputs.begin(); it != outputs.end(); it++)
+    {
+        PyObject* data = PyDict_GetItem(pyOutputs, PyString_FromString(it->first.c_str()));
+        python.except(data, "evaluation for tensor '" + it->first + "' failed");
+
+        it->second->setArray(data);
+    }
+}
+
+PythonInterface Graph::getPythonInterface()
 {
     return python;
 }
 
-} // namespace DNN
+} // namespace tf
+
+} // namespace dnn

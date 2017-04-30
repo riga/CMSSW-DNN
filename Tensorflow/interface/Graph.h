@@ -11,28 +11,43 @@
 #include <fstream>
 #include <stdexcept>
 #include <string>
+#include <map>
 
 #include "DNN/Base/interface/Logger.h"
 #include "DNN/Base/interface/PythonInterface.h"
 
-namespace DNN
+#include "DNN/Tensorflow/interface/Tensor.h"
+
+namespace dnn
 {
 
-class TensorflowGraph
+namespace tf
+{
+
+class Graph
 {
 public:
-    TensorflowGraph();
-    TensorflowGraph(const std::string& filename);
-    TensorflowGraph(LogLevel logLevel);
-    TensorflowGraph(const std::string& filename, LogLevel logLevel);
-    virtual ~TensorflowGraph();
+    Graph();
+    Graph(const std::string& filename);
+    Graph(LogLevel logLevel);
+    Graph(const std::string& filename, LogLevel logLevel);
+    virtual ~Graph();
 
-    // void load(const std::string& filename);
-    void load(std::string filename);
-    void defineInputs(const std::vector<std::string>& inputs);
-    void defineOutputs(const std::vector<std::string>& outputs);
-    void startSession();
-    int call();
+    Tensor* defineInput(Tensor* tensor);
+    Tensor* defineOutput(Tensor* tensor);
+
+    bool removeInput(const std::string& name);
+    bool removeOutput(const std::string& name);
+
+    inline bool hasInput(const std::string& name) const;
+    inline bool hasOutput(const std::string& name) const;
+
+    Tensor* getInput(const std::string& name);
+    Tensor* getOutput(const std::string& name);
+
+    void load(const std::string& filename);
+    void buildArgs();
+    void eval();
 
     PythonInterface getPythonInterface();
 
@@ -42,13 +57,18 @@ private:
     Logger logger;
     PythonInterface python;
 
-    size_t nInputs;
-    size_t nOutputs;
+    std::map<std::string, Tensor*> inputs;
+    std::map<std::string, Tensor*> outputs;
+
+    PyObject* pyInputs;
+    PyObject* pyOutputs;
+    PyObject* pyEvalArgs;
+    PyObject* pyEvalSession;
 };
 
 static std::string embeddedTensorflowScript = "\
 import os, sys, numpy as np\n\
-tf = saver = graph = sess = inputs = outputs = None\n\
+tf = sess = saver = None\n\
 \n\
 def insert_path(path):\n\
     path = os.path.expandvars(os.path.expanduser(path))\n\
@@ -58,30 +78,22 @@ def import_tf():\n\
     global tf\n\
     import tensorflow as tf\n\
 \n\
-def load_graph(path):\n\
-    global saver, graph\n\
-    path = os.path.expandvars(os.path.expanduser(path))\n\
-    saver = tf.train.import_meta_graph(path)\n\
-    graph = tf.get_default_graph()\n\
-\n\
-def define_inputs(*names):\n\
-    global inputs\n\
-    inputs = [graph.get_tensor_by_name(name) for name in names]\n\
-\n\
-def define_outputs(*names):\n\
-    global outputs\n\
-    outputs = [graph.get_tensor_by_name(name) for name in names]\n\
-\n\
 def start_session():\n\
     global sess\n\
     sess = tf.Session()\n\
-    sess.run(tf.global_variables_initializer())\n\
 \n\
-def call(*values):\n\
-    results = sess.run(inputs, feed_dict=dict(zip(inputs, values)))\n\
-    return len(results)\n\
+def load_graph(path):\n\
+    global saver\n\
+    path = os.path.expandvars(os.path.expanduser(path))\n\
+    saver = tf.train.import_meta_graph(path + '.meta')\n\
+    saver.restore(sess, path)\n\
+\n\
+def eval_session(inputs, outputs):\n\
+    outputs.update(sess.run(dict(zip(outputs.keys(), outputs.keys())), feed_dict=inputs))\n\
 ";
 
-} // namepace DNN
+} // namepace tf
+
+} // namepace dnn
 
 #endif // DNN_TENSORFLOW_GRAPH_H
