@@ -1,3 +1,5 @@
+<use name="DNN/Base" />
 <use name="DNN/Tensorflow" />
-<bin name="test_tensorflow" file="test_tensorflow.cc"></bin>
-<Flags CXXFLAGS="-g -O0" />
+<bin name="test_tftensor" file="test_tftensor.cc"></bin>
+<bin name="test_tfgraph" file="test_tfgraph.cc"></bin>
+<Flags CXXFLAGS="-g -O0 -fpermissive" />
