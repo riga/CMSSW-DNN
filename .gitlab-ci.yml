@@ -12,11 +12,12 @@ before_script:
   - scramv1 project CMSSW $CMSSW_VERSION
   - cd $CMSSW_VERSION/src
   - eval `scramv1 runtime -sh`
-  - scram setup $CI_HOME/data/gsl.xml
   - cd $CI_HOME
 
 compile:
   stage: compile
+  tags:
+    - cvmfs
   script:
     - cd $CMSSW_BASE/src
     - cp -r $CI_HOME DNN
@@ -32,6 +33,8 @@ compile:
 
 test:
   stage: test
+  tags:
+    - cvmfs
   script:
     - cd $CMSSW_BASE
     - tar -xzf $CI_HOME/cmssw.tgz
