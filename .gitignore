@@ -16,6 +16,7 @@
 *.gz
 *.so
 ._*
+.nfs*
 tmp
 build
-.nfs*
+checkpoint
