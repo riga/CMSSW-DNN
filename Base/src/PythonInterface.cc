@@ -7,7 +7,7 @@
 
 #include "DNN/Base/interface/PythonInterface.h"
 
-namespace DNN
+namespace dnn
 {
 
 PythonInterface::PythonInterface(const LogLevel& level)
@@ -232,4 +232,4 @@ void PythonInterface::startContext()
     Py_INCREF(context);
 }
 
-} // namespace DNN
+} // namespace dnn

@@ -14,7 +14,7 @@
 
 #include "Python.h"
 
-namespace DNN
+namespace dnn
 {
 
 enum LogLevel
@@ -50,6 +50,6 @@ private:
     LogLevel logLevel;
 };
 
-} // namepace DNN
+} // namepace dnn
 
 #endif // DNN_BASE_LOGGER_H

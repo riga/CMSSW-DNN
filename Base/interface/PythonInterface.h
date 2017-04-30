@@ -18,7 +18,7 @@
 
 #include "DNN/Base/interface/Logger.h"
 
-namespace DNN
+namespace dnn
 {
 
 class PythonInterface
@@ -60,6 +60,6 @@ private:
 
 size_t PythonInterface::nConsumers = 0;
 
-} // namepace DNN
+} // namepace dnn
 
 #endif // DNN_BASE_PYTHONINTERFACE_H
