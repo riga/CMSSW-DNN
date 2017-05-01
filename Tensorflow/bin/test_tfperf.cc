@@ -74,7 +74,7 @@ int main(int argc, char* argv[])
             g.eval();
         }
         long int t1 = getTime(&t);
-        std::cout << "-> " << (t1 - t0) / (float)n << " ms per evaluation" << std::endl << std::endl;
+        std::cout << "-> " << (t1 - t0) / (float)n << " ms per batch" << std::endl << std::endl;
     }
 
     // cleanup
