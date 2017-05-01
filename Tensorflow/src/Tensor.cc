@@ -49,15 +49,7 @@ void Tensor::init(int rank, npy_intp* shape, int typenum)
         import_array();
     }
 
-    if (rank >= 0)
-    {
-        array = (PyArrayObject*)PyArray_ZEROS(rank, shape, typenum, 0);;
-    }
-}
-
-bool Tensor::isEmpty() const
-{
-    return !array;
+    setArray(rank, shape, typenum);
 }
 
 std::string Tensor::getName() const
@@ -68,6 +60,30 @@ std::string Tensor::getName() const
 void Tensor::setName(const std::string& name)
 {
     this->name = name;
+}
+
+bool Tensor::isEmpty() const
+{
+    return !array;
+}
+
+void Tensor::setArray(PyArrayObject* array)
+{
+    if (!isEmpty())
+    {
+        Py_XDECREF(this->array);
+        this->array = 0;
+    }
+
+    this->array = array;
+}
+
+void Tensor::setArray(int rank, npy_intp* shape, int typenum)
+{
+    if (rank >= 0)
+    {
+        setArray((PyArrayObject*)PyArray_ZEROS(rank, shape, typenum, 0));
+    }
 }
 
 int Tensor::getRank() const
@@ -140,26 +156,6 @@ void* Tensor::getPtr(npy_intp i, npy_intp j, npy_intp k, npy_intp l, npy_intp m)
 {
     npy_intp pos[5] = {i, j, k, l, m};
     return getPtrAtPos(pos);
-}
-
-PyArrayObject* Tensor::getArray()
-{
-    return array;
-}
-
-void Tensor::setArray(PyArrayObject* array)
-{
-    if (!isEmpty())
-    {
-        Py_DECREF(this->array);
-    }
-
-    this->array = array;
-}
-
-void Tensor::setArray(PyObject* array)
-{
-    setArray((PyArrayObject*)array);
 }
 
 } // namespace tf

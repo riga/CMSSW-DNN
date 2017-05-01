@@ -24,8 +24,6 @@ namespace tf
 
 class Tensor
 {
-friend class Graph;
-
 public:
     Tensor(const std::string& name);
     Tensor(int rank, npy_intp* shape, int typenum = NPY_FLOAT);
@@ -36,6 +34,13 @@ public:
     void setName(const std::string& name);
 
     bool isEmpty() const;
+
+    inline PyArrayObject* getArray()
+    {
+        return array;
+    }
+    void setArray(PyArrayObject* array); // steals reference
+    void setArray(int rank, npy_intp* shape, int typenum = NPY_FLOAT);
 
     int getRank() const;
     const npy_intp* getShape() const;
@@ -91,10 +96,6 @@ public:
     std::vector<T> getVector(int axis, npy_intp a, npy_intp b, npy_intp c); // rank 4
     template <typename T>
     std::vector<T> getVector(int axis, npy_intp a, npy_intp b, npy_intp c, npy_intp d); // rank 5
-
-    PyArrayObject* getArray();
-    void setArray(PyArrayObject* array); // steals reference
-    void setArray(PyObject* array); // steals reference
 
 private:
     void init(int rank, npy_intp* shape, int typenum = NPY_FLOAT);
