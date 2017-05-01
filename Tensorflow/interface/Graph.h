@@ -46,7 +46,6 @@ public:
     Tensor* getOutput(const std::string& name);
 
     void load(const std::string& filename);
-    void buildArgs();
     void eval();
 
     PythonInterface getPythonInterface();

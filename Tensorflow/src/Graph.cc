@@ -176,32 +176,6 @@ void Graph::load(const std::string& filename)
     pyEvalSession = python.get("eval_session");
 }
 
-void Graph::buildArgs()
-{
-    logger.debug("building evaluation args");
-
-    PyDict_Clear(pyInputs);
-    PyDict_Clear(pyOutputs);
-
-    for (std::map<std::string, Tensor*>::iterator it = inputs.begin(); it != inputs.end(); it++)
-    {
-        logger.debug("use array of tensor '" + it->first + "' as input");
-        if (it->second->isEmpty())
-        {
-            throw std::runtime_error("cannot set non-initialized tensor as input");
-        }
-        PyObject* item = (PyObject*)it->second->array;
-        PyDict_SetItem(pyInputs, PyString_FromString(it->first.c_str()), item);
-    }
-
-    for (std::map<std::string, Tensor*>::iterator it = outputs.begin(); it != outputs.end(); it++)
-    {
-        logger.debug("use array of tensor '" + it->first + "' as output");
-        PyObject* item = it->second->isEmpty() ? Py_None : (PyObject*)it->second->array;
-        PyDict_SetItem(pyOutputs, PyString_FromString(it->first.c_str()), item);
-    }
-}
-
 void Graph::eval()
 {
     logger.debug("evaluate");
@@ -211,21 +185,35 @@ void Graph::eval()
         throw std::runtime_error("cannot eval session, graph not loaded yet");
     }
 
-    if (PyDict_Size(pyOutputs) == 0)
+    // sync arrays of input tensors
+    std::map<std::string, Tensor*>::iterator it;
+    for (it = inputs.begin(); it != inputs.end(); it++)
     {
-        buildArgs();
+        if (it->second->isEmpty())
+        {
+            throw std::runtime_error("cannot set non-initialized tensor as input");
+        }
+        PyDict_SetItemString(pyInputs, it->first.c_str(), (PyObject*)it->second->getArray());
+    }
+
+    // clear arrays of output tensors from last call
+    for (it = outputs.begin(); it != outputs.end(); it++)
+    {
+        it->second->setArray(0);
+        PyDict_SetItemString(pyOutputs, it->first.c_str(), Py_None);
     }
 
     // actual evaluation
     python.call(pyEvalSession, pyEvalArgs);
 
-    // update output tensors
-    for (std::map<std::string, Tensor*>::iterator it = outputs.begin(); it != outputs.end(); it++)
+    // update arrays of output tensors
+    for (it = outputs.begin(); it != outputs.end(); it++)
     {
-        PyObject* data = PyDict_GetItem(pyOutputs, PyString_FromString(it->first.c_str()));
-        python.except(data, "evaluation for tensor '" + it->first + "' failed");
+        PyObject* obj = PyDict_GetItemString(pyOutputs, it->first.c_str());
+        python.except(obj, "evaluation for tensor '" + it->first + "' failed");
 
-        it->second->setArray(data);
+        it->second->setArray((PyArrayObject*)obj);
+        Py_INCREF(obj);
     }
 }
 
