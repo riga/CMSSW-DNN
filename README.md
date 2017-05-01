@@ -34,7 +34,7 @@ y = tf.add(tf.matmul(x_, W), b, name="output")
 sess = tf.Session()
 sess.run(tf.global_variables_initializer())
 
-# train you model here
+# train your model here
 ...
 
 # save your model
@@ -43,7 +43,9 @@ saver.save(sess, "/path/to/simplegraph")
 ```
 
 
-##### Load your Model (in CMSSW)
+##### Evaluate your Model (in CMSSW)
+
+(from [`test_tfgraph.cc`](./Tensorflow/bin/test_tfgraph.cc))
 
 ```cpp
 //
