@@ -1,7 +1,7 @@
 /*
  * Simple test of the tensorflow graph interface.
  *
- * Graph (from data/simplegraph.pb, created by test/creategraph.py):
+ * Graph (from data/simplegraph, created by test/creategraph.py):
  *   Input:
  *     - name = "input:0", shape = (batch, 10)
  *   Output:
@@ -36,7 +36,7 @@ int main(int argc, char* argv[])
     // object definitions
     //
 
-    // load and initialize graph
+    // load and initialize the graph
     dnn::tf::Graph g(graphFile, dnn::LogLevel::ALL);
 
     // prepare input and output tensors
