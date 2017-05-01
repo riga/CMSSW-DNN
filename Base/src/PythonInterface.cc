@@ -56,8 +56,6 @@ PyObject* PythonInterface::get(const std::string& name) const
 
 PyObject* PythonInterface::call(PyObject* callable, PyObject* args) const
 {
-    checkContext();
-
     // check if args is a tuple
     size_t nArgs = 0;
     if (args != NULL)
