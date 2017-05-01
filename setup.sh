@@ -10,7 +10,7 @@ action() {
 		if [ -f "/afs/cern.ch/work/m/mharrend/public/tensorflow-cmssw8-0-26.tar.gz" ]; then
 			cp /afs/cern.ch/work/m/mharrend/public/tensorflow-cmssw8-0-26.tar.gz .
 		else
-			wget http://www-ekp.physik.uni-karlsruhe.de/~harrendorf/tensorflow-cmssw8-0-26.tar.gz
+			wget -nv http://www-ekp.physik.uni-karlsruhe.de/~harrendorf/tensorflow-cmssw8-0-26.tar.gz
 		fi
 		tar -zxf tensorflow-cmssw8-0-26.tar.gz
 		mkdir -p python
