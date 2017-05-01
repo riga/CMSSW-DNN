@@ -190,13 +190,14 @@ void Graph::buildArgs()
         {
             throw std::runtime_error("cannot set non-initialized tensor as input");
         }
-        PyDict_SetItem(pyInputs, PyString_FromString(it->first.c_str()), it->second->data);
+        PyObject* item = (PyObject*)it->second->array;
+        PyDict_SetItem(pyInputs, PyString_FromString(it->first.c_str()), item);
     }
 
     for (std::map<std::string, Tensor*>::iterator it = outputs.begin(); it != outputs.end(); it++)
     {
         logger.debug("use array of tensor '" + it->first + "' as output");
-        PyObject* item = it->second->isEmpty() ? Py_None : it->second->data;
+        PyObject* item = it->second->isEmpty() ? Py_None : (PyObject*)it->second->array;
         PyDict_SetItem(pyOutputs, PyString_FromString(it->first.c_str()), item);
     }
 }

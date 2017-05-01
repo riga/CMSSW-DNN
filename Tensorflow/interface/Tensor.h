@@ -93,14 +93,14 @@ public:
     std::vector<T> getVector(int axis, npy_intp a, npy_intp b, npy_intp c, npy_intp d); // rank 5
 
     PyArrayObject* getArray();
-    void setArray(PyObject* data); // steals reference
+    void setArray(PyArrayObject* array); // steals reference
+    void setArray(PyObject* array); // steals reference
 
 private:
     void init(int rank, npy_intp* shape, int typenum = NPY_FLOAT);
 
     std::string name;
-    PyObject* data;
-    PyArrayObject* arrData;
+    PyArrayObject* array;
 };
 
 template <typename T>

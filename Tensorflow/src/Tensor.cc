@@ -15,24 +15,21 @@ namespace tf
 
 Tensor::Tensor(const std::string& name)
     : name(name)
-    , data(0)
-    , arrData(0)
+    , array(0)
 {
     init(-1, 0);
 }
 
 Tensor::Tensor(int rank, npy_intp* shape, int typenum)
     : name("")
-    , data(0)
-    , arrData(0)
+    , array(0)
 {
     init(rank, shape, typenum);
 }
 
 Tensor::Tensor(const std::string& name, int rank, npy_intp* shape, int typenum)
     : name(name)
-    , data(0)
-    , arrData(0)
+    , array(0)
 {
     init(rank, shape, typenum);
 }
@@ -41,7 +38,7 @@ Tensor::~Tensor()
 {
     if (!isEmpty())
     {
-        Py_DECREF(data);
+        Py_DECREF(array);
     }
 }
 
@@ -54,14 +51,13 @@ void Tensor::init(int rank, npy_intp* shape, int typenum)
 
     if (rank >= 0)
     {
-        data = PyArray_ZEROS(rank, shape, typenum, 0);
-        arrData = (PyArrayObject*)data;
+        array = (PyArrayObject*)PyArray_ZEROS(rank, shape, typenum, 0);;
     }
 }
 
 bool Tensor::isEmpty() const
 {
-    return !data || !arrData;
+    return !array;
 }
 
 std::string Tensor::getName() const
@@ -80,7 +76,7 @@ int Tensor::getRank() const
     {
         return -1;
     }
-    return arrData->nd;
+    return array->nd;
 }
 
 const npy_intp* Tensor::getShape() const
@@ -89,7 +85,7 @@ const npy_intp* Tensor::getShape() const
     {
         return 0;
     }
-    return arrData->dimensions;
+    return array->dimensions;
 }
 
 npy_intp Tensor::getShape(int axis) const
@@ -98,7 +94,7 @@ npy_intp Tensor::getShape(int axis) const
     {
         return -1;
     }
-    return (arrData->dimensions)[axis];
+    return (array->dimensions)[axis];
 }
 
 void* Tensor::getPtrAtPos(npy_intp* pos)
@@ -108,7 +104,7 @@ void* Tensor::getPtrAtPos(npy_intp* pos)
         return 0;
     }
 
-    return PyArray_GetPtr(arrData, pos);
+    return PyArray_GetPtr(array, pos);
 }
 
 void* Tensor::getPtr()
@@ -148,18 +144,22 @@ void* Tensor::getPtr(npy_intp i, npy_intp j, npy_intp k, npy_intp l, npy_intp m)
 
 PyArrayObject* Tensor::getArray()
 {
-    return arrData;
+    return array;
 }
 
-void Tensor::setArray(PyObject* data)
+void Tensor::setArray(PyArrayObject* array)
 {
     if (!isEmpty())
     {
-        Py_DECREF(data);
+        Py_DECREF(this->array);
     }
 
-    this->data = data;
-    arrData = (PyArrayObject*)data;
+    this->array = array;
+}
+
+void Tensor::setArray(PyObject* array)
+{
+    setArray((PyArrayObject*)array);
 }
 
 } // namespace tf
