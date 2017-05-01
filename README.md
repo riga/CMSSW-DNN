@@ -7,7 +7,8 @@
 
 This project provides a simple yet fast interface to [Tensorflow](https://www.tensorflow.org) graphs and tensors which lets you evaluate trained models right within CMSSW. It **does not depend** on a converter library or custom NN implementation. By using the C-API's of both Python and NumPy (available via `/cvmfs`), you can essentially load and evaluate every model that was previously saved via [`tf.train.Saver.save()`](https://www.tensorflow.org/api_docs/python/tf/train/Saver#save).
 
-Features in a nutshell:
+
+##### Features in a nutshell
 
 - Direct interface to Tensorflow / NumPy objects, no intermediate converter library required.
 - Fast data access via Numpy arrays and in-place operations.
@@ -16,7 +17,7 @@ Features in a nutshell:
 - **GPU support**.
 
 
-### Example
+### Usage
 
 ##### Save your Model (in Python)
 
