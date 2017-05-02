@@ -52,7 +52,6 @@ private:
     void finalize() const;
 
     bool hasContext() const;
-    void checkContext() const;
     void startContext();
 
     static size_t nConsumers;

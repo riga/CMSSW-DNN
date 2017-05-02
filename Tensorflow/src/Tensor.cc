@@ -88,39 +88,22 @@ void Tensor::setArray(int rank, npy_intp* shape, int typenum)
 
 int Tensor::getRank() const
 {
-    if (isEmpty())
-    {
-        return -1;
-    }
-    return array->nd;
+    return isEmpty() ? -1 : array->nd;
 }
 
 const npy_intp* Tensor::getShape() const
 {
-    if (isEmpty())
-    {
-        return 0;
-    }
-    return array->dimensions;
+    return isEmpty() ? 0 : array->dimensions;
 }
 
 npy_intp Tensor::getShape(int axis) const
 {
-    if (isEmpty())
-    {
-        return -1;
-    }
-    return (array->dimensions)[axis];
+    return isEmpty() ? -1 : (array->dimensions)[axis];
 }
 
 void* Tensor::getPtrAtPos(npy_intp* pos)
 {
-    if (isEmpty())
-    {
-        return 0;
-    }
-
-    return PyArray_GetPtr(array, pos);
+    return isEmpty() ? 0 : PyArray_GetPtr(array, pos);
 }
 
 void* Tensor::getPtr()

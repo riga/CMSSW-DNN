@@ -34,14 +34,37 @@ public:
     static std::string getLogLevelName(LogLevel level);
 
     void setLogLevel(LogLevel level);
-    LogLevel getLogLevel() const;
+    inline LogLevel getLogLevel() const
+    {
+        return logLevel;
+    }
 
     void log(LogLevel level, const std::string& msg) const;
-    void all(const std::string& msg) const;
-    void debug(const std::string& msg) const;
-    void info(const std::string& msg) const;
-    void warning(const std::string& msg) const;
-    void error(const std::string& msg) const;
+
+    inline void all(const std::string& msg) const
+    {
+        log(ALL, msg);
+    }
+
+    inline void debug(const std::string& msg) const
+    {
+        log(DEBUG, msg);
+    }
+
+    inline void info(const std::string& msg) const
+    {
+        log(INFO, msg);
+    }
+
+    inline void warning(const std::string& msg) const
+    {
+        log(WARNING, msg);
+    }
+
+    inline void error(const std::string& msg) const
+    {
+        log(ERROR, msg);
+    }
 
 private:
     std::string logName;

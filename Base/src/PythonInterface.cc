@@ -46,7 +46,10 @@ void PythonInterface::release(PyObject*& ptr) const
 
 PyObject* PythonInterface::get(const std::string& name) const
 {
-    checkContext();
+    if (!hasContext())
+    {
+        throw std::runtime_error("python context not yet started");
+    }
 
     PyObject* obj = PyDict_GetItemString(context, name.c_str());
     except(obj, "could not get object '" + name + "'");
@@ -116,30 +119,36 @@ PyObject* PythonInterface::call(const std::string& name, const std::string& arg)
 PyObject* PythonInterface::createTuple(const std::vector<int>& v) const
 {
     PyObject* tpl = PyTuple_New(v.size());
+
     for (size_t i = 0; i < v.size(); i++)
     {
         PyTuple_SetItem(tpl, i, PyInt_FromLong(v[i]));
     }
+
     return tpl;
 }
 
 PyObject* PythonInterface::createTuple(const std::vector<double>& v) const
 {
     PyObject* tpl = PyTuple_New(v.size());
+
     for (size_t i = 0; i < v.size(); i++)
     {
         PyTuple_SetItem(tpl, i, PyFloat_FromDouble(v[i]));
     }
+
     return tpl;
 }
 
 PyObject* PythonInterface::createTuple(const std::vector<std::string>& v) const
 {
     PyObject* tpl = PyTuple_New(v.size());
+
     for (size_t i = 0; i < v.size(); i++)
     {
         PyTuple_SetItem(tpl, i, PyString_FromString(v[i].c_str()));
     }
+
     return tpl;
 }
 
@@ -147,7 +156,10 @@ void PythonInterface::runScript(const std::string& script)
 {
     logger.info("run script");
 
-    checkContext();
+    if (!hasContext())
+    {
+        throw std::runtime_error("python context not yet started");
+    }
 
     // run the script in our context
     PyObject* result = PyRun_String(script.c_str(), Py_file_input, context, context);
@@ -201,14 +213,6 @@ void PythonInterface::finalize() const
 bool PythonInterface::hasContext() const
 {
     return context != 0;
-}
-
-void PythonInterface::checkContext() const
-{
-    if (!hasContext())
-    {
-        throw std::runtime_error("python context not yet started");
-    }
 }
 
 void PythonInterface::startContext()

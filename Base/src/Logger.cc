@@ -37,11 +37,6 @@ void Logger::setLogLevel(LogLevel level)
     logLevel = level;
 }
 
-LogLevel Logger::getLogLevel() const
-{
-    return logLevel;
-}
-
 void Logger::log(LogLevel level, const std::string& msg) const
 {
     if (level >= logLevel)
@@ -55,31 +50,6 @@ void Logger::log(LogLevel level, const std::string& msg) const
             std::cerr << logName << ": " << getLogLevelName(level) << ": " << msg << std::endl;
         }
     }
-}
-
-void Logger::all(const std::string& msg) const
-{
-    log(ALL, msg);
-}
-
-void Logger::debug(const std::string& msg) const
-{
-    log(DEBUG, msg);
-}
-
-void Logger::info(const std::string& msg) const
-{
-    log(INFO, msg);
-}
-
-void Logger::warning(const std::string& msg) const
-{
-    log(WARNING, msg);
-}
-
-void Logger::error(const std::string& msg) const
-{
-    log(ERROR, msg);
 }
 
 } // namespace dnn
