@@ -5,8 +5,8 @@
  *   Marcel Rieger
  */
 
-#ifndef DNN_TENSORFLOW_GRAPH_H_FOO
-#define DNN_TENSORFLOW_GRAPH_H_FOO
+#ifndef DNN_TENSORFLOW_GRAPH_H
+#define DNN_TENSORFLOW_GRAPH_H
 
 #include <fstream>
 #include <map>
@@ -19,11 +19,11 @@
 #include "DNN/Base/interface/PythonInterface.h"
 #include "DNN/Tensorflow/interface/Tensor.h"
 
-namespace dnn
-{
+// namespace dnn
+// {
 
-namespace tf
-{
+// namespace tf
+// {
 
 class Graph
 {
@@ -92,8 +92,8 @@ def eval_session(inputs, outputs):\n\
     outputs.update(sess.run(dict(zip(outputs.keys(), outputs.keys())), feed_dict=inputs))\n\
 ";
 
-} // namepace tf
+// } // namepace tf
 
-} // namepace dnn
+// } // namepace dnn
 
 #endif // DNN_TENSORFLOW_GRAPH_H

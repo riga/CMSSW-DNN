@@ -25,18 +25,18 @@ void test(bool success, const std::string& msg)
 
 int main(int argc, char* argv[])
 {
-    std::cout << std::endl << "test dnn::tf::Tensor" << std::endl;
+    std::cout << std::endl << "test Tensor" << std::endl;
 
     // unlike graphs, tensors do not have their own python interface,
     // so start one here so that numpy works
-    dnn::PythonInterface p(dnn::LogLevel::ALL);
+    PythonInterface p(LogLevel::ALL);
 
 
     //
     // simple tests
     //
 
-    dnn::tf::Tensor* t = new dnn::tf::Tensor("myTensor");
+    Tensor* t = new Tensor("myTensor");
     test(t->isEmpty(), "tensor should be empty");
     test(t->getName() == "myTensor", "wrong tensor name");
     t->setName("myTensor2");
@@ -52,7 +52,7 @@ int main(int argc, char* argv[])
     //
 
     npy_intp shape[] = {2, 3, 4};
-    t = new dnn::tf::Tensor("myTensor", 3, shape);
+    t = new Tensor("myTensor", 3, shape);
     test(t->getRank() == 3, "tensor should have rank 3");
     test(t->getShape() != 0, "tensor should have a shape");
     test(t->getShape(0) == 2, "tensor dim 0 should size 2");

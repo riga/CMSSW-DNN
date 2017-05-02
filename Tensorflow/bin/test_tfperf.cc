@@ -44,10 +44,10 @@ int main(int argc, char* argv[])
     std::cout << "load graph " << graphFile << std::endl;
 
     // load and initialize the graph
-    dnn::tf::Graph g(graphFile);
+    Graph g(graphFile);
 
-    dnn::tf::Tensor* x = g.defineInput(new dnn::tf::Tensor("input:0"));
-    dnn::tf::Tensor* y = g.defineOutput(new dnn::tf::Tensor("output:0"));
+    Tensor* x = g.defineInput(new Tensor("input:0"));
+    Tensor* y = g.defineOutput(new Tensor("output:0"));
 
     // do the testing various different batch sizes
     int n = 10000;

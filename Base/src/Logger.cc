@@ -7,8 +7,8 @@
 
 #include "DNN/Base/interface/Logger.h"
 
-namespace dnn
-{
+// namespace dnn
+// {
 
 Logger::Logger(const std::string& name, LogLevel level)
     : logName(name)
@@ -52,4 +52,4 @@ void Logger::log(LogLevel level, const std::string& msg) const
     }
 }
 
-} // namespace dnn
+// } // namespace dnn

@@ -5,8 +5,8 @@
  *   Marcel Rieger
  */
 
-#ifndef DNN_BASE_PYTHONINTERFACE_H_FOO
-#define DNN_BASE_PYTHONINTERFACE_H_FOO
+#ifndef DNN_BASE_PYTHONINTERFACE_H
+#define DNN_BASE_PYTHONINTERFACE_H
 
 #include <fstream>
 #include <iostream>
@@ -18,8 +18,8 @@
 
 #include "DNN/Base/interface/Logger.h"
 
-namespace dnn
-{
+// namespace dnn
+// {
 
 class PythonInterface
 {
@@ -59,6 +59,6 @@ private:
 
 size_t PythonInterface::nConsumers = 0;
 
-} // namepace dnn
+// } // namepace dnn
 
 #endif // DNN_BASE_PYTHONINTERFACE_H

@@ -7,11 +7,11 @@
 
 #include "DNN/Tensorflow/interface/Tensor.h"
 
-namespace dnn
-{
+// namespace dnn
+// {
 
-namespace tf
-{
+// namespace tf
+// {
 
 Tensor::Tensor(const std::string& name)
     : name(name)
@@ -141,6 +141,6 @@ void* Tensor::getPtr(npy_intp i, npy_intp j, npy_intp k, npy_intp l, npy_intp m)
     return getPtrAtPos(pos);
 }
 
-} // namespace tf
+// } // namespace tf
 
-} // namespace dnn
+// } // namespace dnn

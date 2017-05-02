@@ -5,15 +5,15 @@
  *   Marcel Rieger
  */
 
-#ifndef DNN_BASE_LOGGER_H_FOO
-#define DNN_BASE_LOGGER_H_FOO
+#ifndef DNN_BASE_LOGGER_H
+#define DNN_BASE_LOGGER_H
 
 #include <iostream>
 #include <string>
 #include <vector>
 
-namespace dnn
-{
+// namespace dnn
+// {
 
 enum LogLevel
 {
@@ -71,6 +71,6 @@ private:
     LogLevel logLevel;
 };
 
-} // namepace dnn
+// } // namepace dnn
 
 #endif // DNN_BASE_LOGGER_H

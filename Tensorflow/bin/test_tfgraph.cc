@@ -23,7 +23,7 @@
 
 int main(int argc, char* argv[])
 {
-    std::cout << std::endl << "test dnn::tf::Graph" << std::endl;
+    std::cout << std::endl << "test Graph" << std::endl;
 
     // get the file containing the graph
     std::string cmsswBase = std::string(getenv("CMSSW_BASE"));
@@ -37,12 +37,12 @@ int main(int argc, char* argv[])
     //
 
     // load and initialize the graph
-    dnn::tf::Graph g(graphFile, dnn::LogLevel::ALL);
+    Graph g(graphFile, LogLevel::ALL);
 
     // prepare input and output tensors
     npy_intp xShape[] = {1, 10};
-    dnn::tf::Tensor* x = g.defineInput(new dnn::tf::Tensor("input:0", 2, xShape));
-    dnn::tf::Tensor* y = g.defineOutput(new dnn::tf::Tensor("output:0"));
+    Tensor* x = g.defineInput(new Tensor("input:0", 2, xShape));
+    Tensor* y = g.defineOutput(new Tensor("output:0"));
 
 
     //

@@ -5,8 +5,8 @@
  *   Marcel Rieger
  */
 
-#ifndef DNN_TENSORFLOW_TENSOR_H_FOO
-#define DNN_TENSORFLOW_TENSOR_H_FOO
+#ifndef DNN_TENSORFLOW_TENSOR_H
+#define DNN_TENSORFLOW_TENSOR_H
 
 #include <iostream>
 #include <stdexcept>
@@ -16,11 +16,11 @@
 #include "Python.h"
 #include "numpy/arrayobject.h"
 
-namespace dnn
-{
+// namespace dnn
+// {
 
-namespace tf
-{
+// namespace tf
+// {
 
 class Tensor
 {
@@ -262,8 +262,8 @@ std::vector<T> Tensor::getVector(int axis, npy_intp a, npy_intp b, npy_intp c, n
     return getVectorAtPos<T>(axis, pos);
 }
 
-} // namepace tf
+// } // namepace tf
 
-} // namepace dnn
+// } // namepace dnn
 
 #endif // DNN_TENSORFLOW_TENSOR_H

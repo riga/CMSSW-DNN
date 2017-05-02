@@ -7,11 +7,11 @@
 
 #include "DNN/Tensorflow/interface/Graph.h"
 
-namespace dnn
-{
+// namespace dnn
+// {
 
-namespace tf
-{
+// namespace tf
+// {
 
 Graph::Graph()
     : logger(Logger("tf::Graph"))
@@ -216,6 +216,6 @@ PythonInterface& Graph::getPythonInterface()
     return python;
 }
 
-} // namespace tf
+// } // namespace tf
 
-} // namespace dnn
+// } // namespace dnn
