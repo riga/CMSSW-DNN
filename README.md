@@ -7,6 +7,8 @@
 
 This project provides a simple yet fast interface to [Tensorflow](https://www.tensorflow.org) graphs and tensors which lets you evaluate trained models right within CMSSW. It **does not depend** on a converter library or custom NN implementation. By using the C-API's of both Python and NumPy (available via `/cvmfs`), you can essentially load and evaluate every model that was previously saved via [`tf.train.Saver.save()`](https://www.tensorflow.org/api_docs/python/tf/train/Saver#save).
 
+Tensorflow is available starting from CMSSW 9.0.X ([PR](https://github.com/cms-sw/cmsdist/pull/2824)). The software bundle for CMSSW 8.0.X is provided by [M. Harrendorf](https://github.com/mharrend).
+
 
 ##### Features in a nutshell
 
