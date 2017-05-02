@@ -97,21 +97,27 @@ void Graph::init(const std::string& filename)
 
 Tensor* Graph::defineInput(Tensor* tensor)
 {
-    if (tensor)
+    if (!tensor || tensor->getName().empty())
     {
-        removeInput(tensor->getName());
-        inputs[tensor->getName()] = tensor;
+        throw std::runtime_error("input tensor must not be empty or unnamed");
     }
+
+    removeInput(tensor->getName());
+    inputs[tensor->getName()] = tensor;
+
     return tensor;
 }
 
 Tensor* Graph::defineOutput(Tensor* tensor)
 {
-    if (tensor)
+    if (!tensor || tensor->getName().empty())
     {
-        removeOutput(tensor->getName());
-        outputs[tensor->getName()] = tensor;
+        throw std::runtime_error("output tensor must not be empty or unnamed");
     }
+
+    removeOutput(tensor->getName());
+    outputs[tensor->getName()] = tensor;
+
     return tensor;
 }
 
@@ -121,7 +127,9 @@ bool Graph::removeInput(const std::string& name)
     {
         return false;
     }
+
     inputs.erase(name);
+
     return true;
 }
 
@@ -131,7 +139,9 @@ bool Graph::removeOutput(const std::string& name)
     {
         return false;
     }
+
     outputs.erase(name);
+
     return true;
 }
 
@@ -147,20 +157,12 @@ bool Graph::hasOutput(const std::string& name) const
 
 Tensor* Graph::getInput(const std::string& name)
 {
-    if (!hasInput(name))
-    {
-        return 0;
-    }
-    return inputs.find(name)->second;
+    return hasInput(name) ? inputs.find(name)->second : 0;
 }
 
 Tensor* Graph::getOutput(const std::string& name)
 {
-    if (!hasOutput(name))
-    {
-        return 0;
-    }
-    return outputs.find(name)->second;
+    return hasOutput(name) ? outputs.find(name)->second : 0;
 }
 
 void Graph::load(const std::string& filename)
