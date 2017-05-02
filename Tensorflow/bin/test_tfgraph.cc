@@ -18,7 +18,7 @@
 #include <string>
 #include <vector>
 
-#include "DNN/Tensorflow/interface/Tensor.h"
+// #include "DNN/Tensorflow/interface/Tensor.h"
 #include "DNN/Tensorflow/interface/Graph.h"
 
 int main(int argc, char* argv[])

@@ -5,8 +5,8 @@
  *   Marcel Rieger
  */
 
-#ifndef DNN_BASE_LOGGER_H
-#define DNN_BASE_LOGGER_H
+// #ifndef DNN_BASE_LOGGER_H
+// #define DNN_BASE_LOGGER_H
 
 #include <iostream>
 #include <string>
@@ -73,4 +73,4 @@ private:
 
 // } // namepace dnn
 
-#endif // DNN_BASE_LOGGER_H
+// #endif // DNN_BASE_LOGGER_H

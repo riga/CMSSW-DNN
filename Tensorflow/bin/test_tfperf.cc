@@ -22,7 +22,7 @@
 #include <limits>
 #include <sys/time.h>
 
-#include "DNN/Tensorflow/interface/Tensor.h"
+// #include "DNN/Tensorflow/interface/Tensor.h"
 #include "DNN/Tensorflow/interface/Graph.h"
 
 long int getTime(timeval* t)

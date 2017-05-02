@@ -5,8 +5,8 @@
  *   Marcel Rieger
  */
 
-#ifndef DNN_TENSORFLOW_GRAPH_H
-#define DNN_TENSORFLOW_GRAPH_H
+// #ifndef DNN_TENSORFLOW_GRAPH_H
+// #define DNN_TENSORFLOW_GRAPH_H
 
 #include <fstream>
 #include <map>
@@ -15,7 +15,7 @@
 
 #include "Python.h"
 
-#include "DNN/Base/interface/Logger.h"
+// #include "DNN/Base/interface/Logger.h"
 #include "DNN/Base/interface/PythonInterface.h"
 #include "DNN/Tensorflow/interface/Tensor.h"
 
@@ -96,4 +96,4 @@ def eval_session(inputs, outputs):\n\
 
 // } // namepace dnn
 
-#endif // DNN_TENSORFLOW_GRAPH_H
+// #endif // DNN_TENSORFLOW_GRAPH_H

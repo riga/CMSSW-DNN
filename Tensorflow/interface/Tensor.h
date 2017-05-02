@@ -5,8 +5,8 @@
  *   Marcel Rieger
  */
 
-#ifndef DNN_TENSORFLOW_TENSOR_H
-#define DNN_TENSORFLOW_TENSOR_H
+// #ifndef DNN_TENSORFLOW_TENSOR_H
+// #define DNN_TENSORFLOW_TENSOR_H
 
 #include <iostream>
 #include <stdexcept>
@@ -266,4 +266,4 @@ std::vector<T> Tensor::getVector(int axis, npy_intp a, npy_intp b, npy_intp c, n
 
 // } // namepace dnn
 
-#endif // DNN_TENSORFLOW_TENSOR_H
+// #endif // DNN_TENSORFLOW_TENSOR_H

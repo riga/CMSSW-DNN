@@ -5,8 +5,8 @@
  *   Marcel Rieger
  */
 
-#ifndef DNN_BASE_PYTHONINTERFACE_H
-#define DNN_BASE_PYTHONINTERFACE_H
+// #ifndef DNN_BASE_PYTHONINTERFACE_H
+// #define DNN_BASE_PYTHONINTERFACE_H
 
 #include <fstream>
 #include <iostream>
@@ -61,4 +61,4 @@ size_t PythonInterface::nConsumers = 0;
 
 // } // namepace dnn
 
-#endif // DNN_BASE_PYTHONINTERFACE_H
+// #endif // DNN_BASE_PYTHONINTERFACE_H
