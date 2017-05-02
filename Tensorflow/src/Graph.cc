@@ -217,7 +217,7 @@ void Graph::eval()
     }
 }
 
-PythonInterface Graph::getPythonInterface()
+PythonInterface& Graph::getPythonInterface()
 {
     return python;
 }

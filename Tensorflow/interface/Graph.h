@@ -48,7 +48,7 @@ public:
     void load(const std::string& filename);
     void eval();
 
-    PythonInterface getPythonInterface();
+    PythonInterface& getPythonInterface();
 
 private:
     void init(const std::string& filename);
