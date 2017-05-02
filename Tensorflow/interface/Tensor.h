@@ -5,8 +5,8 @@
  *   Marcel Rieger
  */
 
-#ifndef DNN_TENSORFLOW_TENSOR_H
-#define DNN_TENSORFLOW_TENSOR_H
+#ifndef DNN_TENSORFLOW_TENSOR_H_FOO
+#define DNN_TENSORFLOW_TENSOR_H_FOO
 
 #include <iostream>
 #include <stdexcept>

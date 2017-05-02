@@ -5,8 +5,8 @@
  *   Marcel Rieger
  */
 
-#ifndef DNN_TENSORFLOW_GRAPH_H
-#define DNN_TENSORFLOW_GRAPH_H
+#ifndef DNN_TENSORFLOW_GRAPH_H_FOO
+#define DNN_TENSORFLOW_GRAPH_H_FOO
 
 #include <fstream>
 #include <map>

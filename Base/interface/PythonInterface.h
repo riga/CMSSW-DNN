@@ -5,8 +5,8 @@
  *   Marcel Rieger
  */
 
-#ifndef DNN_BASE_PYTHONINTERFACE_H
-#define DNN_BASE_PYTHONINTERFACE_H
+#ifndef DNN_BASE_PYTHONINTERFACE_H_FOO
+#define DNN_BASE_PYTHONINTERFACE_H_FOO
 
 #include <fstream>
 #include <iostream>

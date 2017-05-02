@@ -5,8 +5,8 @@
  *   Marcel Rieger
  */
 
-#ifndef DNN_BASE_LOGGER_H
-#define DNN_BASE_LOGGER_H
+#ifndef DNN_BASE_LOGGER_H_FOO
+#define DNN_BASE_LOGGER_H_FOO
 
 #include <iostream>
 #include <string>
