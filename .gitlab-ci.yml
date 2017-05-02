@@ -20,7 +20,10 @@ test:
   script:
     - cd $CMSSW_BASE/src
     - cp -r $CI_HOME DNN
+    - pwd
     - source DNN/setup.sh
+    - pwd
+    - ls
     - sed "s|numpy/arrayobject.h|/cvmfs/cms.cern.ch/slc6_amd64_gcc530/external/py2-numpy/1.11.1-ikhhed2/lib/python2.7/site-packages/numpy-1.11.1-py2.7-linux-x86_64.egg/numpy/core/include/numpy/arrayobject.h|g" Tensorflow/interface/Tensor.h > Tensorflow/interface/Tensor.h
     - scram b || exit ${?}
     - test_tftensor || exit ${?}
