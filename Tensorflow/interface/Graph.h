@@ -9,13 +9,14 @@
 #define DNN_TENSORFLOW_GRAPH_H
 
 #include <fstream>
+#include <map>
 #include <stdexcept>
 #include <string>
-#include <map>
+
+#include "Python.h"
 
 #include "DNN/Base/interface/Logger.h"
 #include "DNN/Base/interface/PythonInterface.h"
-
 #include "DNN/Tensorflow/interface/Tensor.h"
 
 namespace dnn

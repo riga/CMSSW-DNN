@@ -12,8 +12,6 @@
 #include <string>
 #include <vector>
 
-#include "Python.h"
-
 namespace dnn
 {
 
