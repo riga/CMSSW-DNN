@@ -1,6 +1,4 @@
-## DNN / Tensorflow Interface for CMSSW
-
-[![build status](https://gitlab.cern.ch/mrieger/CMSSW-DNN/badges/master/build.svg)](https://gitlab.cern.ch/mrieger/CMSSW-DNN/pipelines)
+## DNN / Tensorflow Interface for CMSSW&nbsp;&nbsp;&nbsp;&nbsp;[![build status](https://gitlab.cern.ch/mrieger/CMSSW-DNN/badges/master/build.svg)](https://gitlab.cern.ch/mrieger/CMSSW-DNN/pipelines)
 
 - Main repository & issues: [gitlab.cern.ch/mrieger/CMSSW-DNN](https://gitlab.cern.ch/mrieger/CMSSW-DNN)
 - Code mirror: [github.com/riga/CMSSW-DNN](https://github.com/riga/CMSSW-DNN)
@@ -61,8 +59,8 @@ dnn::tf::Graph graph("/path/to/simplegraph");
 // prepare input and output tensors
 // no shape info required for output
 npy_intp xShape[] = {1, 10}; // 1 = single batch
-dnn::tf::Tensor* x = g.defineInput(new dnn::tf::Tensor("input:0", 2, xShape));
-dnn::tf::Tensor* y = g.defineOutput(new dnn::tf::Tensor("output:0"));
+dnn::tf::Tensor* x = graph.defineInput(new dnn::tf::Tensor("input:0", 2, xShape));
+dnn::tf::Tensor* y = graph.defineOutput(new dnn::tf::Tensor("output:0"));
 
 //
 // evaluation
@@ -75,7 +73,7 @@ for (int i = 0; i < x->getShape(1); i++)
 
 // evaluation call
 // this does not return anything but changes the output tensor(s) in-place
-g.eval();
+graph.eval();
 
 // print the output
 // -> [[float]]
