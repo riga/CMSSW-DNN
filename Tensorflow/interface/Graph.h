@@ -37,8 +37,8 @@ public:
     Tensor* defineInput(Tensor* tensor);
     Tensor* defineOutput(Tensor* tensor);
 
-    bool removeInput(const std::string& name);
-    bool removeOutput(const std::string& name);
+    void removeInput(const std::string& name);
+    void removeOutput(const std::string& name);
 
     inline bool hasInput(const std::string& name) const;
     inline bool hasOutput(const std::string& name) const;

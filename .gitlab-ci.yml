@@ -21,13 +21,7 @@ test:
     - cd $CMSSW_BASE/src
     - cp -r $CI_HOME DNN
     - source DNN/setup.sh
-    - echo 0
-    - ls /cvmfs/cms.cern.ch/slc6_amd64_gcc530/external
-    - echo 1
-    - ls /cvmfs/cms.cern.ch/slc6_amd64_gcc530/external/py2-numpy
-    - echo 2
-    - ls /cvmfs/cms.cern.ch/slc6_amd64_gcc530/external/py2-numpy/1.11.1-ikhhed2/lib/python2.7/site-packages/numpy-1.11.1-py2.7-linux-x86_64.egg/numpy/core/include/numpy
-    - echo 3
+    - sed "s|numpy/arrayobject.h|/cvmfs/cms.cern.ch/slc6_amd64_gcc530/external/py2-numpy/1.11.1-ikhhed2/lib/python2.7/site-packages/numpy-1.11.1-py2.7-linux-x86_64.egg/numpy/core/include/numpy/arrayobject.h|g" Tensorflow/interface/Tensor.h > Tensorflow/interface/Tensor.h
     - scram b || exit ${?}
     - test_tftensor || exit ${?}
     - test_tfgraph

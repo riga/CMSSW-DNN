@@ -121,28 +121,20 @@ Tensor* Graph::defineOutput(Tensor* tensor)
     return tensor;
 }
 
-bool Graph::removeInput(const std::string& name)
+void Graph::removeInput(const std::string& name)
 {
-    if (!hasInput(name))
+    if (hasInput(name))
     {
-        return false;
+        inputs.erase(name);
     }
-
-    inputs.erase(name);
-
-    return true;
 }
 
-bool Graph::removeOutput(const std::string& name)
+void Graph::removeOutput(const std::string& name)
 {
-    if (!hasOutput(name))
+    if (hasOutput(name))
     {
-        return false;
+        outputs.erase(name);
     }
-
-    outputs.erase(name);
-
-    return true;
 }
 
 bool Graph::hasInput(const std::string& name) const
