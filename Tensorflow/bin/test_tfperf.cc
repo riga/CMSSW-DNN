@@ -51,13 +51,13 @@ int main(int argc, char* argv[])
 
     // do the testing various different batch sizes
     int n = 10000;
-    npy_intp batchSizes[] = {1, 10, 100, 1000};
+    int batchSizes[] = {1, 10, 100, 1000};
     for (size_t i = 0; i < 4; i++)
     {
         std::cout << "run " << n << " evaluations for batch size " << batchSizes[i] << std::endl;
 
         // update tensors
-        npy_intp xShape[] = {batchSizes[i], 100};
+        int xShape[] = {batchSizes[i], 100};
         x->setArray(2, xShape);
 
         for (int j = 0; j < x->getShape(0); j++)
