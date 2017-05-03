@@ -20,14 +20,14 @@ Tensor::Tensor(const std::string& name)
     init(-1, 0);
 }
 
-Tensor::Tensor(int rank, npy_intp* shape, int typenum)
+Tensor::Tensor(int rank, Shape* shape, int typenum)
     : name("")
     , array(0)
 {
     init(rank, shape, typenum);
 }
 
-Tensor::Tensor(const std::string& name, int rank, npy_intp* shape, int typenum)
+Tensor::Tensor(const std::string& name, int rank, Shape* shape, int typenum)
     : name(name)
     , array(0)
 {
@@ -42,7 +42,7 @@ Tensor::~Tensor()
     }
 }
 
-void Tensor::init(int rank, npy_intp* shape, int typenum)
+void Tensor::init(int rank, Shape* shape, int typenum)
 {
     if (PyArray_API == NULL)
     {
@@ -78,7 +78,7 @@ void Tensor::setArray(PyArrayObject* array)
     this->array = array;
 }
 
-void Tensor::setArray(int rank, npy_intp* shape, int typenum)
+void Tensor::setArray(int rank, Shape* shape, int typenum)
 {
     if (rank >= 0)
     {
@@ -88,20 +88,20 @@ void Tensor::setArray(int rank, npy_intp* shape, int typenum)
 
 int Tensor::getRank() const
 {
-    return isEmpty() ? -1 : array->nd;
+    return isEmpty() ? -1 : PyArray_NDIM(array);
 }
 
-const npy_intp* Tensor::getShape() const
+const Shape* Tensor::getShape() const
 {
-    return isEmpty() ? 0 : array->dimensions;
+    return isEmpty() ? 0 : PyArray_SHAPE(array);
 }
 
-npy_intp Tensor::getShape(int axis) const
+Shape Tensor::getShape(int axis) const
 {
-    return isEmpty() ? -1 : (array->dimensions)[axis];
+    return isEmpty() ? -1 : PyArray_DIM(array, axis);
 }
 
-void* Tensor::getPtrAtPos(npy_intp* pos)
+void* Tensor::getPtrAtPos(Shape* pos)
 {
     return isEmpty() ? 0 : PyArray_GetPtr(array, pos);
 }
@@ -111,33 +111,33 @@ void* Tensor::getPtr()
     return getPtrAtPos(0);
 }
 
-void* Tensor::getPtr(npy_intp i)
+void* Tensor::getPtr(Shape i)
 {
-    npy_intp pos[1] = {i};
+    Shape pos[1] = {i};
     return getPtrAtPos(pos);
 }
 
-void* Tensor::getPtr(npy_intp i, npy_intp j)
+void* Tensor::getPtr(Shape i, Shape j)
 {
-    npy_intp pos[2] = {i, j};
+    Shape pos[2] = {i, j};
     return getPtrAtPos(pos);
 }
 
-void* Tensor::getPtr(npy_intp i, npy_intp j, npy_intp k)
+void* Tensor::getPtr(Shape i, Shape j, Shape k)
 {
-    npy_intp pos[3] = {i, j, k};
+    Shape pos[3] = {i, j, k};
     return getPtrAtPos(pos);
 }
 
-void* Tensor::getPtr(npy_intp i, npy_intp j, npy_intp k, npy_intp l)
+void* Tensor::getPtr(Shape i, Shape j, Shape k, Shape l)
 {
-    npy_intp pos[4] = {i, j, k, l};
+    Shape pos[4] = {i, j, k, l};
     return getPtrAtPos(pos);
 }
 
-void* Tensor::getPtr(npy_intp i, npy_intp j, npy_intp k, npy_intp l, npy_intp m)
+void* Tensor::getPtr(Shape i, Shape j, Shape k, Shape l, Shape m)
 {
-    npy_intp pos[5] = {i, j, k, l, m};
+    Shape pos[5] = {i, j, k, l, m};
     return getPtrAtPos(pos);
 }
 

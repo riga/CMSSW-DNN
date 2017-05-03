@@ -63,7 +63,7 @@ dnn::tf::Graph graph("/path/to/simplegraph");
 
 // prepare input and output tensors
 // no shape info required for output
-int xShape[] = {1, 10}; // 1 = single batch
+dnn::tf::Shape xShape[] = {1, 10}; // 1 = single batch
 dnn::tf::Tensor* x = graph.defineInput(new dnn::tf::Tensor("input:0", 2, xShape));
 dnn::tf::Tensor* y = graph.defineOutput(new dnn::tf::Tensor("output:0"));
 

@@ -8,6 +8,8 @@
 #ifndef DNN_TENSORFLOW_TENSOR_H
 #define DNN_TENSORFLOW_TENSOR_H
 
+#define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
+
 #include <iostream>
 #include <stdexcept>
 #include <string>
@@ -22,12 +24,14 @@ namespace dnn
 namespace tf
 {
 
+typedef npy_intp Shape;
+
 class Tensor
 {
 public:
     Tensor(const std::string& name);
-    Tensor(int rank, npy_intp* shape, int typenum = NPY_FLOAT);
-    Tensor(const std::string& name, int rank, npy_intp* shape, int typenum = NPY_FLOAT);
+    Tensor(int rank, Shape* shape, int typenum = NPY_FLOAT);
+    Tensor(const std::string& name, int rank, Shape* shape, int typenum = NPY_FLOAT);
     virtual ~Tensor();
 
     std::string getName() const;
@@ -40,72 +44,72 @@ public:
         return array;
     }
     void setArray(PyArrayObject* array); // steals reference
-    void setArray(int rank, npy_intp* shape, int typenum = NPY_FLOAT);
+    void setArray(int rank, Shape* shape, int typenum = NPY_FLOAT);
 
     int getRank() const;
-    const npy_intp* getShape() const;
-    npy_intp getShape(int axis) const;
+    const Shape* getShape() const;
+    Shape getShape(int axis) const;
 
-    void* getPtrAtPos(npy_intp* pos);
+    void* getPtrAtPos(Shape* pos);
     void* getPtr();
-    void* getPtr(npy_intp i);
-    void* getPtr(npy_intp i, npy_intp j);
-    void* getPtr(npy_intp i, npy_intp j, npy_intp k);
-    void* getPtr(npy_intp i, npy_intp j, npy_intp k, npy_intp l);
-    void* getPtr(npy_intp i, npy_intp j, npy_intp k, npy_intp l, npy_intp m);
+    void* getPtr(Shape i);
+    void* getPtr(Shape i, Shape j);
+    void* getPtr(Shape i, Shape j, Shape k);
+    void* getPtr(Shape i, Shape j, Shape k, Shape l);
+    void* getPtr(Shape i, Shape j, Shape k, Shape l, Shape m);
 
     template <typename T>
-    T getValueAtPos(npy_intp* pos);
+    T getValueAtPos(Shape* pos);
     template <typename T>
     T getValue();
     template <typename T>
-    T getValue(npy_intp i);
+    T getValue(Shape i);
     template <typename T>
-    T getValue(npy_intp i, npy_intp j);
+    T getValue(Shape i, Shape j);
     template <typename T>
-    T getValue(npy_intp i, npy_intp j, npy_intp k);
+    T getValue(Shape i, Shape j, Shape k);
     template <typename T>
-    T getValue(npy_intp i, npy_intp j, npy_intp k, npy_intp l);
+    T getValue(Shape i, Shape j, Shape k, Shape l);
     template <typename T>
-    T getValue(npy_intp i, npy_intp j, npy_intp k, npy_intp l, npy_intp m);
+    T getValue(Shape i, Shape j, Shape k, Shape l, Shape m);
 
     template <typename T>
-    void setValueAtPos(npy_intp* pos, T value);
+    void setValueAtPos(Shape* pos, T value);
     template <typename T>
     void setValue(T value);
     template <typename T>
-    void setValue(npy_intp i, T value);
+    void setValue(Shape i, T value);
     template <typename T>
-    void setValue(npy_intp i, npy_intp j, T value);
+    void setValue(Shape i, Shape j, T value);
     template <typename T>
-    void setValue(npy_intp i, npy_intp j, npy_intp k, T value);
+    void setValue(Shape i, Shape j, Shape k, T value);
     template <typename T>
-    void setValue(npy_intp i, npy_intp j, npy_intp k, npy_intp l, T value);
+    void setValue(Shape i, Shape j, Shape k, Shape l, T value);
     template <typename T>
-    void setValue(npy_intp i, npy_intp j, npy_intp k, npy_intp l, npy_intp m, T value);
+    void setValue(Shape i, Shape j, Shape k, Shape l, Shape m, T value);
 
     template <typename T>
-    std::vector<T> getVectorAtPos(int axis, npy_intp* pos);
+    std::vector<T> getVectorAtPos(int axis, Shape* pos);
     template <typename T>
     std::vector<T> getVector(); // rank 1
     template <typename T>
-    std::vector<T> getVector(int axis, npy_intp a); // rank 2
+    std::vector<T> getVector(int axis, Shape a); // rank 2
     template <typename T>
-    std::vector<T> getVector(int axis, npy_intp a, npy_intp b); // rank 3
+    std::vector<T> getVector(int axis, Shape a, Shape b); // rank 3
     template <typename T>
-    std::vector<T> getVector(int axis, npy_intp a, npy_intp b, npy_intp c); // rank 4
+    std::vector<T> getVector(int axis, Shape a, Shape b, Shape c); // rank 4
     template <typename T>
-    std::vector<T> getVector(int axis, npy_intp a, npy_intp b, npy_intp c, npy_intp d); // rank 5
+    std::vector<T> getVector(int axis, Shape a, Shape b, Shape c, Shape d); // rank 5
 
 private:
-    void init(int rank, npy_intp* shape, int typenum = NPY_FLOAT);
+    void init(int rank, Shape* shape, int typenum = NPY_FLOAT);
 
     std::string name;
     PyArrayObject* array;
 };
 
 template <typename T>
-T Tensor::getValueAtPos(npy_intp* pos)
+T Tensor::getValueAtPos(Shape* pos)
 {
     return *((T*)(getPtrAtPos(pos)));
 }
@@ -117,37 +121,37 @@ T Tensor::getValue()
 }
 
 template <typename T>
-T Tensor::getValue(npy_intp i)
+T Tensor::getValue(Shape i)
 {
     return *((T*)(getPtr(i)));
 }
 
 template <typename T>
-T Tensor::getValue(npy_intp i, npy_intp j)
+T Tensor::getValue(Shape i, Shape j)
 {
     return *((T*)(getPtr(i, j)));
 }
 
 template <typename T>
-T Tensor::getValue(npy_intp i, npy_intp j, npy_intp k)
+T Tensor::getValue(Shape i, Shape j, Shape k)
 {
     return *((T*)(getPtr(i, j, k)));
 }
 
 template <typename T>
-T Tensor::getValue(npy_intp i, npy_intp j, npy_intp k, npy_intp l)
+T Tensor::getValue(Shape i, Shape j, Shape k, Shape l)
 {
     return *((T*)(getPtr(i, j, k, l)));
 }
 
 template <typename T>
-T Tensor::getValue(npy_intp i, npy_intp j, npy_intp k, npy_intp l, npy_intp m)
+T Tensor::getValue(Shape i, Shape j, Shape k, Shape l, Shape m)
 {
     return *((T*)(getPtr(i, j, k, l, m)));
 }
 
 template <typename T>
-void Tensor::setValueAtPos(npy_intp* pos, T value)
+void Tensor::setValueAtPos(Shape* pos, T value)
 {
     getPtrAtPos(pos) = (void*)(&value);
 }
@@ -159,37 +163,37 @@ void Tensor::setValue(T value)
 }
 
 template <typename T>
-void Tensor::setValue(npy_intp i, T value)
+void Tensor::setValue(Shape i, T value)
 {
     getPtr(i) = (void*)(&value);
 }
 
 template <typename T>
-void Tensor::setValue(npy_intp i, npy_intp j, T value)
+void Tensor::setValue(Shape i, Shape j, T value)
 {
     *((T*)(getPtr(i, j))) = value;
 }
 
 template <typename T>
-void Tensor::setValue(npy_intp i, npy_intp j, npy_intp k, T value)
+void Tensor::setValue(Shape i, Shape j, Shape k, T value)
 {
     *((T*)(getPtr(i, j, k))) = value;
 }
 
 template <typename T>
-void Tensor::setValue(npy_intp i, npy_intp j, npy_intp k, npy_intp l, T value)
+void Tensor::setValue(Shape i, Shape j, Shape k, Shape l, T value)
 {
     *((T*)(getPtr(i, j, k, l))) = value;
 }
 
 template <typename T>
-void Tensor::setValue(npy_intp i, npy_intp j, npy_intp k, npy_intp l, npy_intp m, T value)
+void Tensor::setValue(Shape i, Shape j, Shape k, Shape l, Shape m, T value)
 {
     *((T*)(getPtr(i, j, k, l, m))) = value;
 }
 
 template <typename T>
-std::vector<T> Tensor::getVectorAtPos(int axis, npy_intp* pos)
+std::vector<T> Tensor::getVectorAtPos(int axis, Shape* pos)
 {
     const int rank = getRank();
     if (axis < 0)
@@ -202,7 +206,7 @@ std::vector<T> Tensor::getVectorAtPos(int axis, npy_intp* pos)
                                  + std::to_string(rank));
     }
 
-    npy_intp pos2[rank];
+    Shape pos2[rank];
     for (int i = 0; i < rank; i++)
     {
         if (i < axis)
@@ -220,7 +224,7 @@ std::vector<T> Tensor::getVectorAtPos(int axis, npy_intp* pos)
     }
 
     std::vector<T> v;
-    for (npy_intp i = 0; i < getShape(axis); i++)
+    for (Shape i = 0; i < getShape(axis); i++)
     {
         pos2[axis] = i;
         v.push_back(*((T*)(getPtrAtPos(pos2))));
@@ -235,30 +239,30 @@ std::vector<T> Tensor::getVector()
 }
 
 template <typename T>
-std::vector<T> Tensor::getVector(int axis, npy_intp a)
+std::vector<T> Tensor::getVector(int axis, Shape a)
 {
-    npy_intp pos[1] = {a};
+    Shape pos[1] = {a};
     return getVectorAtPos<T>(axis, pos);
 }
 
 template <typename T>
-std::vector<T> Tensor::getVector(int axis, npy_intp a, npy_intp b)
+std::vector<T> Tensor::getVector(int axis, Shape a, Shape b)
 {
-    npy_intp pos[2] = {a, b};
+    Shape pos[2] = {a, b};
     return getVectorAtPos<T>(axis, pos);
 }
 
 template <typename T>
-std::vector<T> Tensor::getVector(int axis, npy_intp a, npy_intp b, npy_intp c)
+std::vector<T> Tensor::getVector(int axis, Shape a, Shape b, Shape c)
 {
-    npy_intp pos[3] = {a, b, c};
+    Shape pos[3] = {a, b, c};
     return getVectorAtPos<T>(axis, pos);
 }
 
 template <typename T>
-std::vector<T> Tensor::getVector(int axis, npy_intp a, npy_intp b, npy_intp c, npy_intp d)
+std::vector<T> Tensor::getVector(int axis, Shape a, Shape b, Shape c, Shape d)
 {
-    npy_intp pos[4] = {a, b, c, d};
+    Shape pos[4] = {a, b, c, d};
     return getVectorAtPos<T>(axis, pos);
 }
 

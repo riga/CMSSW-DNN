@@ -51,7 +51,7 @@ int main(int argc, char* argv[])
     // value tests
     //
 
-    int shape[] = {2, 3, 4};
+    dnn::tf::Shape shape[] = {2, 3, 4};
     t = new dnn::tf::Tensor("myTensor", 3, shape);
     test(t->getRank() == 3, "tensor should have rank 3");
     test(t->getShape() != 0, "tensor should have a shape");

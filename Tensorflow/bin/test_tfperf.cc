@@ -57,7 +57,7 @@ int main(int argc, char* argv[])
         std::cout << "run " << n << " evaluations for batch size " << batchSizes[i] << std::endl;
 
         // update tensors
-        int xShape[] = {batchSizes[i], 100};
+        dnn::tf::Shape xShape[] = {batchSizes[i], 100};
         x->setArray(2, xShape);
 
         for (int j = 0; j < x->getShape(0); j++)

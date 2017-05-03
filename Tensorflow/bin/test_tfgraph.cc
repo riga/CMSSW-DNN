@@ -40,7 +40,7 @@ int main(int argc, char* argv[])
     dnn::tf::Graph g(graphFile, dnn::LogLevel::ALL);
 
     // prepare input and output tensors
-    int xShape[] = {1, 10};
+    dnn::tf::Shape xShape[] = {1, 10};
     dnn::tf::Tensor* x = g.defineInput(new dnn::tf::Tensor("input:0", 2, xShape));
     dnn::tf::Tensor* y = g.defineOutput(new dnn::tf::Tensor("output:0"));
 
