@@ -19,7 +19,7 @@ Tensorflow is available starting from CMSSW 9.0.X ([PR](https://github.com/cms-s
 
 ##### Tensorflow C++ API
 
-Tensorflow also provides a C++ API which could replace the Python/NumPy C API approch described above. However, it is not yet available in CMSSW. The plan is to transition to a pure Tensorflow backend once it becomes available while the (higher-level) API of *this tool* remains the same.
+Tensorflow also provides a C++ API which could replace the Python/NumPy C API approch described above. However, it is not yet available in CMSSW ([discussion](https://github.com/cms-sw/cmsdist/issues/2994)). The plan is to transition to a pure Tensorflow backend once it becomes available while the (higher-level) API of *this tool* remains the same.
 
 
 ### Usage
