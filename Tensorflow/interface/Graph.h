@@ -62,7 +62,6 @@ private:
 
     PyObject* pyInputs;
     PyObject* pyOutputs;
-    PyObject* pyEvalArgs;
     PyObject* pyEvalSession;
 };
 

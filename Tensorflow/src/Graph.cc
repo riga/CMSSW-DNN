@@ -18,7 +18,6 @@ Graph::Graph()
     , python()
     , pyInputs(0)
     , pyOutputs(0)
-    , pyEvalArgs(0)
     , pyEvalSession(0)
 {
     init("");
@@ -29,7 +28,6 @@ Graph::Graph(const std::string& filename)
     , python()
     , pyInputs(0)
     , pyOutputs(0)
-    , pyEvalArgs(0)
     , pyEvalSession(0)
 {
     init(filename);
@@ -40,7 +38,6 @@ Graph::Graph(LogLevel logLevel)
     , python(PythonInterface(logLevel))
     , pyInputs(0)
     , pyOutputs(0)
-    , pyEvalArgs(0)
     , pyEvalSession(0)
 {
     init("");
@@ -51,7 +48,6 @@ Graph::Graph(const std::string& filename, LogLevel logLevel)
     , python(PythonInterface(logLevel))
     , pyInputs(0)
     , pyOutputs(0)
-    , pyEvalArgs(0)
     , pyEvalSession(0)
 {
     init(filename);
@@ -62,7 +58,6 @@ Graph::~Graph()
     // cleanup python objects
     python.release(pyInputs);
     python.release(pyOutputs);
-    python.release(pyEvalArgs);
 }
 
 void Graph::init(const std::string& filename)
@@ -80,14 +75,9 @@ void Graph::init(const std::string& filename)
     PyObject* result2 = python.call("import_tf");
     python.release(result2);
 
-    // create the evaluation arguments
+    // create the in/output dicts
     pyInputs = PyDict_New();
     pyOutputs = PyDict_New();
-    pyEvalArgs = PyTuple_New(2);
-    PyTuple_SetItem(pyEvalArgs, 0, pyInputs);
-    Py_INCREF(pyInputs);
-    PyTuple_SetItem(pyEvalArgs, 1, pyOutputs);
-    Py_INCREF(pyOutputs);
 
     if (!filename.empty())
     {
@@ -174,7 +164,7 @@ void Graph::eval()
 {
     logger.debug("evaluate");
 
-    if (!pyEvalSession || !pyEvalArgs)
+    if (!pyEvalSession)
     {
         throw std::runtime_error("cannot eval session, graph not loaded yet");
     }
@@ -198,7 +188,13 @@ void Graph::eval()
     }
 
     // actual evaluation
+    PyObject* pyEvalArgs = PyTuple_New(2);
+    Py_INCREF(pyInputs);
+    PyTuple_SetItem(pyEvalArgs, 0, pyInputs);
+    Py_INCREF(pyOutputs);
+    PyTuple_SetItem(pyEvalArgs, 1, pyOutputs);
     python.call(pyEvalSession, pyEvalArgs);
+    Py_DECREF(pyEvalArgs);
 
     // update arrays of output tensors
     for (it = outputs.begin(); it != outputs.end(); it++)
@@ -206,8 +202,8 @@ void Graph::eval()
         PyObject* obj = PyDict_GetItemString(pyOutputs, it->first.c_str());
         python.except(obj, "evaluation for tensor '" + it->first + "' failed");
 
-        it->second->setArray((PyArrayObject*)obj);
         Py_INCREF(obj);
+        it->second->setArray((PyArrayObject*)obj);
     }
 }
 
