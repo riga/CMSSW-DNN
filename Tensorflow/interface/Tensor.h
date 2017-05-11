@@ -159,13 +159,13 @@ void Tensor::setValueAtPos(Shape* pos, T value)
 template <typename T>
 void Tensor::setValue(T value)
 {
-    getPtrAtPos(0) = (void*)(&value);
+    *((T*)(getPtr())) = value;
 }
 
 template <typename T>
 void Tensor::setValue(Shape i, T value)
 {
-    getPtr(i) = (void*)(&value);
+    *((T*)(getPtr(i))) = value;
 }
 
 template <typename T>
