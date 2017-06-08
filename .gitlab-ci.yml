@@ -17,6 +17,7 @@ test:
   stage: test
   tags:
     - cvmfs
+    - docker
   script:
     - cd $CMSSW_BASE/src
     - cp -r $CI_HOME DNN
