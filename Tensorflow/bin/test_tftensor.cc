@@ -66,8 +66,14 @@ int main(int argc, char* argv[])
     test(values[0] == 17., "first vector value should be 17.");
     test(values[1] == 0., "second vector value should be 0.");
     test(t->getVector<float>(-1, 0, 0)[0] == 17., "first vector value should be 17.");
+    std::vector<float> v = { 1., 2., 3. };
+    dnn::tf::Shape pos[] = { 0, 0 };
+    t->setVectorAtPos<float>(-2, pos, v);
+    test(t->getValue<float>(0, 0, 0) == 1., "value at 0,0,0 should be 1.");
+    test(t->getValue<float>(0, 2, 0) == 3., "value at 0,2,0 should be 3.");
+    t->setVector<float>(1, 1, 3, v);
+    test(t->getValue<float>(1, 2, 3) == 3., "value at 1,2,3 should be 3.");
     delete t;
-
 
     std::cout << std::endl << "done" << std::endl;
 

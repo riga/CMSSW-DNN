@@ -50,6 +50,8 @@ public:
     const Shape* getShape() const;
     Shape getShape(int axis) const;
 
+    int getAxis(int axis) const;
+
     void* getPtrAtPos(Shape* pos);
     void* getPtr();
     void* getPtr(Shape i);
@@ -100,6 +102,19 @@ public:
     std::vector<T> getVector(int axis, Shape a, Shape b, Shape c); // rank 4
     template <typename T>
     std::vector<T> getVector(int axis, Shape a, Shape b, Shape c, Shape d); // rank 5
+
+    template <typename T>
+    void setVectorAtPos(int axis, Shape* pos, std::vector<T> v);
+    template <typename T>
+    void setVector(std::vector<T> v); // rank 1
+    template <typename T>
+    void setVector(int axis, Shape a, std::vector<T> v); // rank 2
+    template <typename T>
+    void setVector(int axis, Shape a, Shape b, std::vector<T> v); // rank 3
+    template <typename T>
+    void setVector(int axis, Shape a, Shape b, Shape c, std::vector<T> v); // rank 4
+    template <typename T>
+    void setVector(int axis, Shape a, Shape b, Shape c, Shape d, std::vector<T> v); // rank 5
 
 private:
     void init(int rank, Shape* shape, int typenum = NPY_FLOAT);
@@ -153,7 +168,7 @@ T Tensor::getValue(Shape i, Shape j, Shape k, Shape l, Shape m)
 template <typename T>
 void Tensor::setValueAtPos(Shape* pos, T value)
 {
-    getPtrAtPos(pos) = (void*)(&value);
+    *((T*)(getPtrAtPos(pos))) = value;
 }
 
 template <typename T>
@@ -195,16 +210,8 @@ void Tensor::setValue(Shape i, Shape j, Shape k, Shape l, Shape m, T value)
 template <typename T>
 std::vector<T> Tensor::getVectorAtPos(int axis, Shape* pos)
 {
+    axis = getAxis(axis);
     const int rank = getRank();
-    if (axis < 0)
-    {
-        axis = rank + axis;
-    }
-    if (axis >= rank)
-    {
-        throw std::runtime_error("axis " + std::to_string(axis) + " invalid for rank " 
-                                 + std::to_string(rank));
-    }
 
     Shape pos2[rank];
     for (int i = 0; i < rank; i++)
@@ -219,7 +226,7 @@ std::vector<T> Tensor::getVectorAtPos(int axis, Shape* pos)
         }
         else
         {
-            pos2[i] = pos[i-1];
+            pos2[i] = pos[i - 1];
         }
     }
 
@@ -241,29 +248,99 @@ std::vector<T> Tensor::getVector()
 template <typename T>
 std::vector<T> Tensor::getVector(int axis, Shape a)
 {
-    Shape pos[1] = {a};
+    Shape pos[1] = { a };
     return getVectorAtPos<T>(axis, pos);
 }
 
 template <typename T>
 std::vector<T> Tensor::getVector(int axis, Shape a, Shape b)
 {
-    Shape pos[2] = {a, b};
+    Shape pos[2] = { a, b };
     return getVectorAtPos<T>(axis, pos);
 }
 
 template <typename T>
 std::vector<T> Tensor::getVector(int axis, Shape a, Shape b, Shape c)
 {
-    Shape pos[3] = {a, b, c};
+    Shape pos[3] = { a, b, c };
     return getVectorAtPos<T>(axis, pos);
 }
 
 template <typename T>
 std::vector<T> Tensor::getVector(int axis, Shape a, Shape b, Shape c, Shape d)
 {
-    Shape pos[4] = {a, b, c, d};
+    Shape pos[4] = { a, b, c, d };
     return getVectorAtPos<T>(axis, pos);
+}
+
+template <typename T>
+void Tensor::setVectorAtPos(int axis, Shape* pos, std::vector<T> v)
+{
+    axis = getAxis(axis);
+    const int rank = getRank();
+
+    Shape pos2[rank];
+    for (int i = 0; i < rank; i++)
+    {
+        if (i < axis)
+        {
+            pos2[i] = pos[i];
+        }
+        else if (i == axis)
+        {
+            pos2[i] = axis;
+        }
+        else
+        {
+            pos2[i] = pos[i - 1];
+        }
+    }
+
+    if (getShape(axis) != (Shape)v.size())
+    {
+        throw std::runtime_error("invalid vector size of " + std::to_string(v.size()) + " for "
+            "axis shape " + std::to_string(getShape(axis)));
+    }
+
+    for (Shape i = 0; i < getShape(axis); i++)
+    {
+        pos2[axis] = i;
+        setValueAtPos<T>(pos2, v[i]);
+    }
+}
+
+template <typename T>
+void Tensor::setVector(std::vector<T> v)
+{
+    setVectorAtPos<T>(0, 0, v);
+}
+
+template <typename T>
+void Tensor::setVector(int axis, Shape a, std::vector<T> v)
+{
+    Shape pos[1] = { a };
+    setVectorAtPos<T>(axis, pos, v);
+}
+
+template <typename T>
+void Tensor::setVector(int axis, Shape a, Shape b, std::vector<T> v)
+{
+    Shape pos[2] = { a, b };
+    setVectorAtPos<T>(axis, pos, v);
+}
+
+template <typename T>
+void Tensor::setVector(int axis, Shape a, Shape b, Shape c, std::vector<T> v)
+{
+    Shape pos[3] = { a, b, c };
+    setVectorAtPos<T>(axis, pos, v);
+}
+
+template <typename T>
+void Tensor::setVector(int axis, Shape a, Shape b, Shape c, Shape d, std::vector<T> v)
+{
+    Shape pos[4] = { a, b, c, d };
+    setVectorAtPos<T>(axis, pos, v);
 }
 
 } // namepace tf

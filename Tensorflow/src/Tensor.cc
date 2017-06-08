@@ -101,6 +101,21 @@ Shape Tensor::getShape(int axis) const
     return isEmpty() ? -1 : PyArray_DIM(array, axis);
 }
 
+int Tensor::getAxis(int axis) const
+{
+    const int rank = getRank();
+    if (axis < 0)
+    {
+        axis = rank + axis;
+    }
+    if (axis >= rank)
+    {
+        throw std::runtime_error("axis " + std::to_string(axis) + " invalid for rank "
+            + std::to_string(rank));
+    }
+    return axis;
+}
+
 void* Tensor::getPtrAtPos(Shape* pos)
 {
     return isEmpty() ? 0 : PyArray_GetPtr(array, pos);
