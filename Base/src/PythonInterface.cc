@@ -234,4 +234,6 @@ void PythonInterface::startContext()
     Py_INCREF(context);
 }
 
+size_t PythonInterface::nConsumers = 0;
+
 } // namespace dnn

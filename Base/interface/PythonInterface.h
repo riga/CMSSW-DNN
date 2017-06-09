@@ -57,8 +57,6 @@ private:
     static size_t nConsumers;
 };
 
-size_t PythonInterface::nConsumers = 0;
-
 } // namepace dnn
 
 #endif // DNN_BASE_PYTHONINTERFACE_H
