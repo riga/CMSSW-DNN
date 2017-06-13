@@ -25,3 +25,4 @@ test:
     - scram b || exit ${?}
     - test_tftensor || exit ${?}
     - test_tfgraph
+    - test_kitmodel

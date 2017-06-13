@@ -1,0 +1,10 @@
+Number of input variables: 239
+Number of hidden layers and neurons: [200]
+Activation function: relu
+Optimizer: adam, Learning Rate: 0.001
+Number of epochs trained: 12
+Validation ROC-AUC score: 0.7159
+Batch Size: 128
+Dropout: 0.7
+L2 Regularization: 1e-08
+Mean Training Time per Epoch: 2.86906049365 s
