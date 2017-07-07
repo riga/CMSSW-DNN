@@ -32,7 +32,7 @@ int main(int argc, char* argv[])
 
     // get the file containing the graph
     std::string cmsswBase = std::string(getenv("CMSSW_BASE"));
-    std::string dataDir = cmsswBase + "/src/DNN/Tensorflow/data";
+    std::string dataDir = cmsswBase + "/src/DNN/Tensorflow/bin/data";
     std::string graphFile = dataDir + "/kitmodel";
     std::cout << "load kitmodel graph " << graphFile << std::endl;
 
