@@ -1,10 +1,7 @@
 <use name="DNN/Base" />
 <use name="DNN/Tensorflow" />
-<use name="boost" />
-<use name="eigen" />
 <bin name="test_kitmodel" file="test_kitmodel.cc"></bin>
 <bin name="test_tftensor" file="test_tftensor.cc"></bin>
 <bin name="test_tfgraph" file="test_tfgraph.cc"></bin>
 <bin name="test_tfperf" file="test_tfperf.cc"></bin>
-<bin name="test_lwtnnperf" file="test_lwtnnperf.cc"></bin>
-<Flags CXXFLAGS="-g -O0 -fpermissive -I/cvmfs/cms.cern.ch/slc6_amd64_gcc530/external/lwtnn/1.0/include -L/cvmfs/cms.cern.ch/slc6_amd64_gcc530/external/lwtnn/1.0/lib -llwtnn" />
+<Flags CXXFLAGS="-g -O0 -fpermissive" />
