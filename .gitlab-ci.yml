@@ -29,21 +29,6 @@ before_script:
     - test_tftensor || exit ${?}
     - test_tfgraph
 
-92X:
-  stage: test
-  tags:
-    - cvmfs
-    - docker
-  variables:
-    SCRAM_ARCH: slc6_amd64_gcc530
-    CMSSW_VERSION: CMSSW_9_2_6
-  script:
-    - cd $CMSSW_BASE/src
-    - source DNN/setup_legacy.sh
-    - scram b || exit ${?}
-    - test_tftensor || exit ${?}
-    - test_tfgraph
-
 93X:
   stage: test
   tags:

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# Legacy setup script for slc6_amd64_gcc530 in combination with 80X and <=92X.
+# Legacy setup script for slc6_amd64_gcc530 in combination with 80X
 # Usage:
 #   > ./setup.sh
 
@@ -23,7 +23,7 @@ action() {
 
 	# check CMSSW_VERSION
 	local cv="$( echo $CMSSW_VERSION | cut -d_ -f2-3 )"
-	if [ "$cv" != "8_0" ] && [ "$cv" != "9_0" ] && [ "$cv" != "9_1" ] && [ "$cv" != "9_2" ]; then
+	if [ "$cv" != "8_0" ]; then
 		>&2 echo "CMSSW_VERSION '$CMSSW_VERSION' not supported"
 		cd "$origin"
 		return 1
