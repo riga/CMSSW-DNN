@@ -5,11 +5,12 @@
 
 This project provides a simple yet fast interface to [Tensorflow](https://www.tensorflow.org) graphs and tensors which lets you evaluate trained models right within CMSSW. It **does not depend** on a converter library or custom NN implementation. By using the C-API's of both Python and NumPy (available via `/cvmfs`), you can essentially load and evaluate every model that was previously saved via [`tf.train.Saver.save()`](https://www.tensorflow.org/api_docs/python/tf/train/Saver#save).
 
-Tensorflow is available starting from CMSSW 9.0.X ([PR](https://github.com/cms-sw/cmsdist/pull/2824)). The software bundle for CMSSW 8.0.X is provided by [M. Harrendorf](https://github.com/mharrend).
+Tensorflow is available starting from CMSSW 9.3.X. The software bundle for CMSSW 8.0.X is provided by [M. Harrendorf](https://github.com/mharrend).
 
 
 ##### Features in a nutshell
 
+- Supports arbitrary network architectures natively.
 - Direct interface to Tensorflow / NumPy objects, no intermediate converter library required.
 - Fast data access via Numpy arrays and in-place operations.
 - Evaluation with multiple input and output tensors.
@@ -133,6 +134,28 @@ run 10000 evaluations for batch size 1000
 
 ### Installation
 
+##### 93X
+
+93X is not released yet. However, you can test pre-releases such as `CMSSW_9_3_X_2017-07-20-1100` on lxplus.
+
+```bash
+source /cvmfs/cms.cern.ch/cmsset_default.sh
+
+export SCRAM_ARCH="slc6_amd64_gcc630"
+export CMSSW_VERSION="CMSSW_9_3_X_2017-07-20-1100" # pre-release
+
+cmsrel $CMSSW_VERSION
+cd $CMSSW_VERSION/src
+cmsenv
+
+git clone https://gitlab.cern.ch/mrieger/CMSSW-DNN.git DNN
+
+scram b -j
+```
+
+
+##### 80X
+
 ```bash
 source /cvmfs/cms.cern.ch/cmsset_default.sh
 
@@ -144,7 +167,7 @@ cd $CMSSW_VERSION/src
 cmsenv
 
 git clone https://gitlab.cern.ch/mrieger/CMSSW-DNN.git DNN
-./DNN/setup.sh
+./DNN/setup_legacy.sh # only difference to 93X setup
 
 scram b -j
 ```
