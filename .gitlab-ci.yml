@@ -21,3 +21,44 @@ stages:
     - scram b || exit ${?}
     - test_tftensor || exit ${?}
     - test_tfgraph
+
+92X:
+  stage: test
+  tags:
+    - cvmfs
+    - docker
+  script:
+    - export CI_HOME="$( pwd )"
+    - git submodule update --init --recursive
+    - export SCRAM_ARCH="slc6_amd64_gcc530"
+    - export CMSSW_VERSION="CMSSW_9_2_6"
+    - source /cvmfs/cms.cern.ch/cmsset_default.sh
+    - cd ..
+    - scramv1 project CMSSW $CMSSW_VERSION
+    - cd $CMSSW_VERSION/src
+    - eval `scramv1 runtime -sh`
+    - cp -r $CI_HOME DNN
+    - source DNN/setup_legacy.sh
+    - scram b || exit ${?}
+    - test_tftensor || exit ${?}
+    - test_tfgraph
+
+93X:
+  stage: test
+  tags:
+    - cvmfs
+    - docker
+  script:
+    - export CI_HOME="$( pwd )"
+    - git submodule update --init --recursive
+    - export SCRAM_ARCH="slc6_amd64_gcc630"
+    - export CMSSW_VERSION="CMSSW_9_3_X_2017-07-20-1100"
+    - source /cvmfs/cms.cern.ch/cmsset_default.sh
+    - cd ..
+    - scramv1 project CMSSW $CMSSW_VERSION
+    - cd $CMSSW_VERSION/src
+    - eval `scramv1 runtime -sh`
+    - cp -r $CI_HOME DNN
+    - scram b || exit ${?}
+    - test_tftensor || exit ${?}
+    - test_tfgraph
