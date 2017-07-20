@@ -8,7 +8,7 @@ action() {
 	local origin="$( /bin/pwd )"
 
 	# check CMSSW installation
-	if [ -d "$CMSSW_BASE" ]; then
+	if [ ! -d "$CMSSW_BASE" ]; then
 		>&2 echo "please setup CMSSW before calling this script"
 		cd "$origin"
 		return 1
