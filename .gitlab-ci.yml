@@ -1,18 +1,6 @@
 stages:
   - test
 
-before_script:
-  - export CI_HOME="$( pwd )"
-  - git submodule update --init --recursive
-  - export SCRAM_ARCH="slc6_amd64_gcc530"
-  - export CMSSW_VERSION="CMSSW_8_0_26_patch2"
-  - source /cvmfs/cms.cern.ch/cmsset_default.sh
-  - cd ..
-  - scramv1 project CMSSW $CMSSW_VERSION
-  - cd $CMSSW_VERSION/src
-  - eval `scramv1 runtime -sh`
-  - cd $CI_HOME
-
 80X:
   stage: test
   tags:
