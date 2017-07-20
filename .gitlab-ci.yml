@@ -24,7 +24,7 @@ before_script:
     CMSSW_VERSION: CMSSW_8_0_26_patch2
   script:
     - cd $CMSSW_BASE/src
-    - source DNN/setup_legacy.sh.sh
+    - source DNN/setup_legacy.sh
     - scram b || exit ${?}
     - test_tftensor || exit ${?}
     - test_tfgraph
@@ -39,7 +39,7 @@ before_script:
     CMSSW_VERSION: CMSSW_9_2_6
   script:
     - cd $CMSSW_BASE/src
-    - source DNN/setup_legacy.sh.sh
+    - source DNN/setup_legacy.sh
     - scram b || exit ${?}
     - test_tftensor || exit ${?}
     - test_tfgraph
