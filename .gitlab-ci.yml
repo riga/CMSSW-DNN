@@ -26,5 +26,5 @@ before_script:
     - cd $CMSSW_BASE/src
     - scram b || exit ${?}
     - test_tftensor || exit ${?}
-    - python DNN/Tensorflow/test/creategraph.py || exit ${?}
+    - python DNN/TensorFlow/test/creategraph.py || exit ${?}
     - test_tfgraph
