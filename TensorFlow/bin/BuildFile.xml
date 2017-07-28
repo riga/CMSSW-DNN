@@ -1,0 +1,8 @@
+<use name="tensorflow-c" />
+<use name="DNN/TensorFlow" />
+
+<bin name="test_tftensor" file="test_tftensor.cc"></bin>
+<bin name="test_tfgraph" file="test_tfgraph.cc"></bin>
+<bin name="test_tfperf" file="test_tfperf.cc"></bin>
+
+<Flags CXXFLAGS="-g -O0 -fpermissive" />
