@@ -3,7 +3,7 @@
 - Main repository & issues: [gitlab.cern.ch/mrieger/CMSSW-DNN](https://gitlab.cern.ch/mrieger/CMSSW-DNN)
 - Code mirror: [github.com/riga/CMSSW-DNN](https://github.com/riga/CMSSW-DNN)
 
-This project provides a simple yet fast interface to [TensorFlow](https://www.tensorflow.org) graphs and tensors which lets you evaluate trained models right within CMSSW. It **does not depend** on a converter library or custom NN implementation. By using TensorFlow's C API (available via `/cvmfs`), you can essentially load and evaluate every model that was previously saved in both C **and** Python.
+This project provides a simple yet fast interface to [TensorFlow](https://www.tensorflow.org) graphs and tensors which lets you evaluate trained models right within CMSSW. It **does not depend** on a converter library or custom NN implementation. By using TensorFlow's C API (available via `/cvmfs`), you can essentially load and evaluate every model that was previously saved in both C **or** Python.
 
 This interface requires CMSSW 9.3.X or greater. For lower versions see the [80X branch](tree/80X).
 
