@@ -22,6 +22,7 @@ namespace tf
 // forward declaration
 class Graph;
 
+// generic class containing all information of inputs to / ouptuts from a graph
 class GraphIO
 {
 public:
@@ -41,6 +42,7 @@ private:
     friend Graph;
 };
 
+// the Graph class
 class Graph
 {
 public:

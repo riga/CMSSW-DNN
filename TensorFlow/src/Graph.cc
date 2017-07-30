@@ -317,7 +317,6 @@ void Graph::prepareEval()
     // clear input objects and set them again
     inputOutputs.clear();
     inputTensors.clear();
-
     std::vector<GraphIO*>::iterator it;
     for (it = inputs.begin(); it != inputs.end(); it++)
     {
@@ -328,7 +327,6 @@ void Graph::prepareEval()
     // clear output objects and set them again
     outputOutputs.clear();
     outputTensors.clear();
-
     for (it = outputs.begin(); it != outputs.end(); it++)
     {
         outputOutputs.push_back(&(*it)->tf_output);

@@ -28,6 +28,21 @@ Tensor::~Tensor()
     reset();
 }
 
+size_t Tensor::getTensorSize(int rank, Shape* shape, DataType dtype)
+{
+    // get the byte size of one element of that dtype
+    size_t elementSize = TF_DataTypeSize(dtype);
+
+    // get the number of elements
+    size_t nElements = 1;
+    for (int i = 0; i < rank; ++i)
+    {
+        nElements *= shape[i];
+    }
+
+    return nElements * elementSize;
+}
+
 void Tensor::init(TF_Tensor* t)
 {
     reset();
@@ -99,21 +114,6 @@ int Tensor::getAxis(int axis) const
     }
 
     return wrappedAxis;
-}
-
-size_t Tensor::getTensorSize(int rank, Shape* shape, DataType dtype)
-{
-    // get the byte size of one element of that dtype
-    size_t elementSize = TF_DataTypeSize(dtype);
-
-    // get the number of elements
-    size_t nElements = 1;
-    for (int i = 0; i < rank; ++i)
-    {
-        nElements *= shape[i];
-    }
-
-    return nElements * elementSize;
 }
 
 Shape Tensor::getIndex(Shape* pos) const

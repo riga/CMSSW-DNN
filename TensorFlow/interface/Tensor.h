@@ -27,6 +27,7 @@ typedef int64_t Shape;
 // constants
 const DataType NO_DATATYPE = TF_RESOURCE;
 
+// the Tensor class
 class Tensor
 {
 public:
@@ -39,11 +40,14 @@ public:
     // destructor
     virtual ~Tensor();
 
+    // static function to return the memory size of a tensor defined by its rank, shape and datatype
+    static size_t getTensorSize(int rank, Shape* shape, DataType dtype);
+
     // inializes the internal tensorflow tensor object with an existing one, takes ownership
     void init(TF_Tensor* t);
 
     // inializes the internal tensorflow tensor object by creating a new one
-    void init(int rank, Shape* shape, DataType dtype = TF_FLOAT)
+    inline void init(int rank, Shape* shape, DataType dtype = TF_FLOAT)
     {
         init(TF_AllocateTensor(dtype, shape, rank, getTensorSize(rank, shape, dtype)));
     }
@@ -58,13 +62,13 @@ public:
     }
 
     // returns the datatype or NO_DATATYPE when empty
-    DataType getDataType() const
+    inline DataType getDataType() const
     {
         return empty() ? NO_DATATYPE : TF_TensorType(tf_tensor);
     }
 
     // returns the tensor tank or -1 when empty
-    int getRank() const
+    inline int getRank() const
     {
         return empty() ? -1 : TF_NumDims(tf_tensor);
     }
@@ -73,13 +77,10 @@ public:
     int getAxis(int axis) const;
 
     // returns the shape of an axis or -1 when empty
-    Shape getShape(int axis) const
+    inline Shape getShape(int axis) const
     {
         return empty() ? -1 : TF_Dim(tf_tensor, getAxis(axis));
     }
-
-    // static function to return the memory size of a tensor defined by its rank, shape and datatype
-    static size_t getTensorSize(int rank, Shape* shape, DataType dtype);
 
     // returns the index in a one dimensional array given a coordinate with multi-dimensional shape
     Shape getIndex(Shape* pos) const;
@@ -274,10 +275,13 @@ public:
     }
 
 private:
+    // the internal tensorflow tensor object
     TF_Tensor* tf_tensor;
 
+    // array of cumulative shape products to accelerate indexing
     int64_t* prod;
 
+    // compares a passed rank to the current rank and throws an exception when they do not match
     inline void assertRank(int rank) const
     {
         if (getRank() != rank)
@@ -287,6 +291,7 @@ private:
         }
     }
 
+    // friends
     friend GraphIO;
     friend Graph;
 };
