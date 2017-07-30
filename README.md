@@ -158,5 +158,10 @@ git clone https://gitlab.cern.ch/mrieger/CMSSW-DNN.git DNN
 
 scram b -j
 
+# tensor test
+test_tftensor
+
+# graph test
+python DNN/TensorFlow/test/creategraph.py
 test_tfgraph
 ```
