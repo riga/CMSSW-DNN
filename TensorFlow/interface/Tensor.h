@@ -95,9 +95,9 @@ public:
     template <typename T>
     inline T* getPtrAtPos(Shape* pos)
     {
-        T* val = static_cast<T*>(getData());
-        val += getIndex(pos);
-        return val;
+        T* ptr = static_cast<T*>(getData());
+        ptr += getIndex(pos);
+        return ptr;
     }
 
     // returns the pointer to a scalar
