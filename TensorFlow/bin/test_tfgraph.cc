@@ -19,8 +19,8 @@
 #include <string>
 #include <vector>
 
-#include <DNN/TensorFlow/interface/Tensor.h>
-#include <DNN/TensorFlow/interface/Graph.h>
+#include "DNN/TensorFlow/interface/Tensor.h"
+#include "DNN/TensorFlow/interface/Graph.h"
 
 void test(bool success, const std::string& msg)
 {
