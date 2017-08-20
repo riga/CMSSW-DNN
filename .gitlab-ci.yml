@@ -24,7 +24,4 @@ before_script:
     CMSSW_VERSION: CMSSW_9_3_X_2017-08-13-2300
   script:
     - cd $CMSSW_BASE/src
-    - scram b || exit ${?}
-    - test_tftensor || exit ${?}
-    - python DNN/TensorFlow/test/creategraph.py || exit ${?}
-    - test_tfgraph
+    - scram b runtests

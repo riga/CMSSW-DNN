@@ -53,8 +53,6 @@ The tag passed to `add_meta_graph_and_variables` serves as an identifier for you
 
 ##### Evaluate your Model (in CMSSW)
 
-(from [`test_tfgraph.cc`](./TensorFlow/bin/test_tfgraph.cc))
-
 ```cpp
 //
 // setup
@@ -95,6 +93,8 @@ delete x;
 delete y;
 ```
 
+For more examples, see [`test/testTensor.cc`](./TensorFlow/test/testTensor.cc) and [`test/testGraph.cc`](./TensorFlow/test/testGraph.cc).
+
 
 ##### Note on Keras
 
@@ -119,13 +119,9 @@ builder.save()
 
 ### Performance
 
-A performance test (CPU only for now) is located at [`test_tfperf.cc`](./TensorFlow/bin/test_tfperf.cc) and runs 1k evaluations of a feed-forward network with 100 input features, 5 hidden elu layers with 200 nodes each, a softmax output with 10 nodes, and multiple batch sizes. Of course, the actual performance is hardware dependent.
+A performance test (CPU only for now) is located at [`test/testPerformance.cc`](./TensorFlow/test/testPerformance.cc) and runs 1k evaluations of a feed-forward network with 100 input features, 5 hidden elu layers with 200 nodes each, a softmax output with 10 nodes, and multiple batch sizes. Of course, the actual performance is hardware dependent.
 
-```shell
-> test_tfperf
-...
-2017-07-28 15:28:46.530114: I tensorflow/cc/saved_model/loader.cc:274] Loading SavedModel: success. Took 76038 microseconds.
-
+```
 run 1000 evaluations for batch size 1
 -> 0.181 ms per batch
 
@@ -156,12 +152,5 @@ cmsenv
 
 git clone https://gitlab.cern.ch/mrieger/CMSSW-DNN.git DNN
 
-scram b -j
-
-# tensor test
-test_tftensor
-
-# graph test
-python DNN/TensorFlow/test/creategraph.py
-test_tfgraph
+scram b
 ```
