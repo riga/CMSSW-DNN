@@ -123,13 +123,13 @@ A performance test (CPU only for now) is located at [`test/testPerformance.cc`](
 
 ```
 run 1000 evaluations for batch size 1
--> 0.181 ms per batch
+-> 0.134 ms per batch
 
 run 1000 evaluations for batch size 10
--> 0.658 ms per batch
+-> 0.440 ms per batch
 
 run 1000 evaluations for batch size 100
--> 2.357 ms per batch
+-> 1.860 ms per batch
 
 run 1000 evaluations for batch size 1000
 -> 8.065 ms per batch
@@ -138,13 +138,13 @@ run 1000 evaluations for batch size 1000
 
 ### Installation
 
-93X is not released yet. However, you can test pre-releases such as `CMSSW_9_3_X_2017-08-13-2300` on lxplus.
+93X is not released yet. However, you can test pre-releases such as `CMSSW_9_3_X_2017-08-19-1100` on lxplus.
 
 ```bash
 source /cvmfs/cms.cern.ch/cmsset_default.sh
 
 export SCRAM_ARCH="slc6_amd64_gcc630"
-export CMSSW_VERSION="CMSSW_9_3_X_2017-08-13-2300" # pre-release
+export CMSSW_VERSION="CMSSW_9_3_X_2017-08-19-1100" # pre-release
 
 cmsrel $CMSSW_VERSION
 cd $CMSSW_VERSION/src

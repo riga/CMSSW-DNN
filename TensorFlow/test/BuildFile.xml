@@ -5,7 +5,15 @@
     <use name="DNN/TensorFlow" />
 </bin>
 
-<bin name="testTFGraph" file="testRunner.cpp,testGraph.cc,testPerformance.cc">
+<bin name="testTFGraph" file="testRunner.cpp,testGraph.cc">
+    <use name="tensorflow-c" />
+    <use name="boost_filesystem" />
+    <use name="cppunit"/>
+
+    <use name="DNN/TensorFlow" />
+</bin>
+
+<bin name="testTFPerformance" file="testRunner.cpp,testPerformance.cc">
     <use name="tensorflow-c" />
     <use name="boost_filesystem" />
     <use name="cppunit"/>

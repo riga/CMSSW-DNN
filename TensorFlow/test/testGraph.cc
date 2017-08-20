@@ -1,8 +1,9 @@
 /*
  * Test of the TensorFlow graph interface.
+ * Based on TensorFlow C API 1.1.
+ * For more info, see https://gitlab.cern.ch/mrieger/CMSSW-DNN.
  *
- * Author:
- *   Marcel Rieger
+ * Author: Marcel Rieger
  */
 
 #include <boost/filesystem.hpp>
