@@ -154,3 +154,38 @@ git clone https://gitlab.cern.ch/mrieger/CMSSW-DNN.git DNN
 
 scram b
 ```
+
+
+### Important Notes
+
+##### TensorFlow uses all GPUs / CPU threads
+
+This is the default TensorFlow behavior. To run on a single device, do:
+
+```cpp
+// create a graph but do not pass a path yet
+tf::Graph graph();
+
+// set session options
+graph.addSessionOption("intra_op_parallelism_threads:1");
+graph.addSessionOption("inter_op_parallelism_threads:1");
+
+// initialize the graph now
+graph.init("/path/to/simplegraph");
+
+// proceed as usual
+...
+```
+
+
+##### Logging
+
+By default, only error logs from the TensorFlow C API are shown. This can be changed via setting the `TF_CPP_MIN_LOG_LEVEL` environment varibale before calling (e.g.) `cmsRun`:
+
+| `TF_CPP_MIN_LOG_LEVEL` value | Verbosity level |
+| ---------------------------- | --------------- |
+| 0                            | debug           |
+| 1                            | info            |
+| 2                            | warning         |
+| 3 (default)                  | error           |
+| 4                            | none            |

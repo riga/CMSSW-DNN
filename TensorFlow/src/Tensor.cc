@@ -12,14 +12,14 @@ namespace tf
 {
 
 Tensor::Tensor()
-    : tf_tensor(0)
-    , prod(0)
+    : tf_tensor_(nullptr)
+    , prod_(nullptr)
 {
 }
 
 Tensor::Tensor(int rank, Shape* shape, DataType dtype)
-    : tf_tensor(0)
-    , prod(0)
+    : tf_tensor_(nullptr)
+    , prod_(nullptr)
 {
     init(rank, shape, dtype);
 }
@@ -49,21 +49,21 @@ void Tensor::init(TF_Tensor* t)
     reset();
 
     // simply assign the tensor
-    tf_tensor = t;
+    tf_tensor_ = t;
 
     // store cumulative products of the axis dimensions that are used for indexing
     // see getIndex for more info
     int rank = getRank();
-    prod = new int64_t[rank];
+    prod_ = new int64_t[rank];
     for (int i = rank - 1; i >= 0; i--)
     {
         if (i == rank - 1)
         {
-            prod[i] = 1;
+            prod_[i] = 1;
         }
         else
         {
-            prod[i] = prod[i+1] * getShape(i+1);
+            prod_[i] = prod_[i+1] * getShape(i+1);
         }
     }
 }
@@ -71,17 +71,17 @@ void Tensor::init(TF_Tensor* t)
 void Tensor::reset()
 {
     // delete the tensorflow tensor object
-    if (tf_tensor)
+    if (!empty())
     {
-        TF_DeleteTensor(tf_tensor);
-        tf_tensor = 0;
+        TF_DeleteTensor(tf_tensor_);
+        tf_tensor_ = nullptr;
     }
 
     // delete cache shape products
-    if (prod)
+    if (prod_)
     {
-        delete[] prod;
-        prod = 0;
+        delete[] prod_;
+        prod_ = nullptr;
     }
 }
 
@@ -110,8 +110,7 @@ int Tensor::getAxis(int axis) const
     // sanity check
     if (wrappedAxis < 0 || wrappedAxis >= rank)
     {
-        throw std::runtime_error("axis " + std::to_string(axis) + " invalid for rank "
-            + std::to_string(rank));
+        throw cms::Exception("InvalidAxis") << "axis " << axis << " invalid for rank " << rank;
     }
 
     return wrappedAxis;
@@ -128,13 +127,13 @@ Shape Tensor::getIndex(Shape* pos) const
 
     if (empty())
     {
-        throw std::runtime_error("cannot find index on uninitialized tensors");
+        throw cms::Exception("InvalidTensor") << "cannot find index on uninitialized tensors";
     }
 
     Shape index = 0;
-    for (int i = 0; i < getRank(); i++)
+    for (int i = 0, r = getRank(); i < r; i++)
     {
-        index += pos[i] * prod[i];
+        index += pos[i] * prod_[i];
     }
 
     return index;

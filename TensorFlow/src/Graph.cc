@@ -12,13 +12,13 @@ namespace tf
 {
 
 GraphIO::GraphIO(Tensor* tensor, TF_Operation* tf_operation, const std::string& opName, int opIndex)
-    : tensor(tensor)
-    , opName(opName)
-    , opIndex(opIndex)
+    : tensor_(tensor)
+    , opName_(opName)
+    , opIndex_(opIndex)
 {
     // create the tf_output object, i.e. a struct of op and index
-    tf_output.oper = tf_operation;
-    tf_output.index = opIndex;
+    tf_output_.oper = tf_operation;
+    tf_output_.index = opIndex;
 }
 
 GraphIO::~GraphIO()
@@ -26,22 +26,19 @@ GraphIO::~GraphIO()
 }
 
 Graph::Graph()
-    : preparedEval(false)
-    , tf_graph(0)
-    , tf_session(0)
+    : preparedEval_(false)
+    , tf_graph_(nullptr)
+    , tf_session_(nullptr)
 {
 }
 
 
 Graph::Graph(const std::string& filename, const std::string& tag)
-    : preparedEval(false)
-    , tf_graph(0)
-    , tf_session(0)
+    : preparedEval_(false)
+    , tf_graph_(nullptr)
+    , tf_session_(nullptr)
 {
-    if (!filename.empty())
-    {
-        init(filename, tag);
-    }
+    init(filename, tag);
 }
 
 Graph::~Graph()
@@ -53,72 +50,82 @@ void Graph::init(const std::string& exportDir, const std::string& tag)
 {
     reset();
 
+    // disable tensorflow logging by default
+    setenv("TF_CPP_MIN_LOG_LEVEL", "3", 0);
+
     // config objects
-    TF_SessionOptions* sessionOptions = TF_NewSessionOptions();
+    TF_SessionOptions* tf_sessionOptions = TF_NewSessionOptions();
     const char* tags[] = { tag.c_str() };
 
+    // apply all session options
+    for (size_t i = 0, s = sessionOptions_.size(); i < s; i++)
+    {
+        TF_SetTarget(tf_sessionOptions, sessionOptions_[i].c_str());
+    }
+
     // initialize an empty graph
-    tf_graph = TF_NewGraph();
+    tf_graph_ = TF_NewGraph();
 
     TF_Status* status = TF_NewStatus();
 
     // create the session and load everything into tf_graph
-    tf_session = TF_LoadSessionFromSavedModel(
-        sessionOptions, 0, exportDir.c_str(), tags, 1, tf_graph, 0, status);
+    tf_session_ = TF_LoadSessionFromSavedModel(
+        tf_sessionOptions, 0, exportDir.c_str(), tags, 1, tf_graph_, 0, status);
     if (TF_GetCode(status) != TF_OK)
     {
-        throw std::runtime_error("error while loading graph: " + std::string(TF_Message(status)));
+        throw cms::Exception("InvalidSession") << "error while loading graph: "
+            << TF_Message(status);
     }
 
     // some cleanup
     TF_DeleteStatus(status);
-    TF_DeleteSessionOptions(sessionOptions);
+    TF_DeleteSessionOptions(tf_sessionOptions);
 }
 
 void Graph::reset()
 {
-    preparedEval = false;
+    preparedEval_ = false;
 
     // clear all inputs
     while (nInputs() > 0)
     {
-        removeInput(inputs[0]);
+        removeInput(inputs_[0]);
     }
 
     // clear all outputs
     while (nOutputs() > 0)
     {
-        removeOutput(outputs[0]);
+        removeOutput(outputs_[0]);
     }
 
     // close and delete the session object
-    if (tf_session)
+    if (tf_session_)
     {
         TF_Status* status = TF_NewStatus();
 
-        TF_CloseSession(tf_session, status);
+        TF_CloseSession(tf_session_, status);
         if (TF_GetCode(status) != TF_OK)
         {
-            throw std::runtime_error("error while closing session: "
-                + std::string(TF_Message(status)));
+            throw cms::Exception("InvalidSession") << "error while closing session: "
+                << TF_Message(status);
         }
 
-        TF_DeleteSession(tf_session, status);
+        TF_DeleteSession(tf_session_, status);
         if (TF_GetCode(status) != TF_OK)
         {
-            throw std::runtime_error("error while deleting session: "
-                + std::string(TF_Message(status)));
+            throw cms::Exception("InvalidSession") << "error while deleting session: "
+                << TF_Message(status);
         }
-        tf_session = 0;
+        tf_session_ = nullptr;
 
         TF_DeleteStatus(status);
     }
 
     // delete the graph object
-    if (tf_graph)
+    if (tf_graph_)
     {
-        TF_DeleteGraph(tf_graph);
-        tf_graph = 0;
+        TF_DeleteGraph(tf_graph_);
+        tf_graph_ = nullptr;
     }
 }
 
@@ -127,29 +134,30 @@ GraphIO* Graph::defineInput(Tensor* tensor, const std::string& opName, int opInd
     // the tensor must be initialized
     if (tensor->empty())
     {
-        throw std::runtime_error("cannot define uninitialized input tensor for operation: "
-            + opName + " " + std::to_string(opIndex));
+        throw cms::Exception("InvalidTensor")
+            << "cannot define uninitialized input tensor for operation: " << opName << " "
+            << opIndex;
     }
 
     // check for duplicate
     if (hasInput(tensor, opName, opIndex))
     {
-        throw std::runtime_error("duplicate input tensor defined for operation: " + opName
-            + " " + std::to_string(opIndex));
+        throw cms::Exception("InvalidInput") << "duplicate input tensor defined for operation: "
+            << opName << " " << opIndex;
     }
 
     // get a pointer to the associated operation
-    TF_Operation* operation = TF_GraphOperationByName(tf_graph, opName.c_str());
+    TF_Operation* operation = TF_GraphOperationByName(tf_graph_, opName.c_str());
     if (!operation)
     {
-        throw std::runtime_error("no such input operation in graph: " + opName);
+        throw cms::Exception("InvalidOperation") << "no such input operation in graph: " << opName;
     }
 
     // create and store the input object
     GraphIO* input = new GraphIO(tensor, operation, opName, opIndex);
-    inputs.push_back(input);
+    inputs_.push_back(input);
 
-    preparedEval = false;
+    preparedEval_ = false;
 
     return input;
 }
@@ -159,37 +167,36 @@ GraphIO* Graph::defineOutput(Tensor* tensor, const std::string& opName, int opIn
     // check for duplicate
     if (hasOutput(tensor, opName, opIndex))
     {
-        throw std::runtime_error("duplicate output tensor defined for operation: " + opName
-            + " " + std::to_string(opIndex));
+        throw cms::Exception("InvalidOutput") << "duplicate output tensor defined for operation: "
+            << opName << " " << opIndex;
     }
 
     // get a pointer to the associated operation
-    TF_Operation* operation = TF_GraphOperationByName(tf_graph, opName.c_str());
+    TF_Operation* operation = TF_GraphOperationByName(tf_graph_, opName.c_str());
     if (!operation)
     {
-        throw std::runtime_error("no such output operation in graph: " + opName);
+        throw cms::Exception("InvalidOperation") << "no such input operation in graph: " << opName;
     }
 
     // create and store the output object
     GraphIO* output = new GraphIO(tensor, operation, opName, opIndex);
-    outputs.push_back(output);
+    outputs_.push_back(output);
 
-    preparedEval = false;
+    preparedEval_ = false;
 
     return output;
 }
 
 void Graph::removeInput(Tensor* tensor, const std::string& opName, int opIndex)
 {
-    std::vector<GraphIO*>::iterator it;
-    for (it = inputs.begin(); it != inputs.end(); it++)
+    for (size_t i = 0, n = nInputs(); i < n; i++)
     {
-        if ((*it)->getTensor() == tensor && (*it)->getOpName() == opName
-            && (*it)->getOpIndex() == opIndex)
+        if (inputs_[i]->getTensor() == tensor && inputs_[i]->getOpName() == opName
+            && inputs_[i]->getOpIndex() == opIndex)
         {
-            delete *it;
-            inputs.erase(it);
-            preparedEval = false;
+            delete inputs_[i];
+            inputs_.erase(inputs_.begin() + i);
+            preparedEval_ = false;
             break;
         }
     }
@@ -197,26 +204,25 @@ void Graph::removeInput(Tensor* tensor, const std::string& opName, int opIndex)
 
 void Graph::removeInput(GraphIO* input)
 {
-    std::vector<GraphIO*>::iterator it = std::find(inputs.begin(), inputs.end(), input);
-    if (it != inputs.end())
+    std::vector<GraphIO*>::iterator it = std::find(inputs_.begin(), inputs_.end(), input);
+    if (it != inputs_.end())
     {
         delete *it;
-        inputs.erase(it);
-        preparedEval = false;
+        inputs_.erase(it);
+        preparedEval_ = false;
     }
 }
 
 void Graph::removeOutput(Tensor* tensor, const std::string& opName, int opIndex)
 {
-    std::vector<GraphIO*>::iterator it;
-    for (it = outputs.begin(); it != outputs.end(); it++)
+    for (size_t i = 0, n = nOutputs(); i < n; i++)
     {
-        if ((*it)->getTensor() == tensor && (*it)->getOpName() == opName
-            && (*it)->getOpIndex() == opIndex)
+        if (outputs_[i]->getTensor() == tensor && outputs_[i]->getOpName() == opName
+            && outputs_[i]->getOpIndex() == opIndex)
         {
-            delete *it;
-            outputs.erase(it);
-            preparedEval = false;
+            delete outputs_[i];
+            outputs_.erase(outputs_.begin() + i);
+            preparedEval_ = false;
             break;
         }
     }
@@ -224,32 +230,31 @@ void Graph::removeOutput(Tensor* tensor, const std::string& opName, int opIndex)
 
 void Graph::removeOutput(GraphIO* output)
 {
-    std::vector<GraphIO*>::iterator it = std::find(outputs.begin(), outputs.end(), output);
-    if (it != outputs.end())
+    std::vector<GraphIO*>::iterator it = std::find(outputs_.begin(), outputs_.end(), output);
+    if (it != outputs_.end())
     {
         delete *it;
-        outputs.erase(it);
-        preparedEval = false;
+        outputs_.erase(it);
+        preparedEval_ = false;
     }
 }
 
 bool Graph::hasInput(GraphIO* input) const
 {
-    return std::find(inputs.begin(), inputs.end(), input) != inputs.end();
+    return std::find(inputs_.begin(), inputs_.end(), input) != inputs_.end();
 }
 
 bool Graph::hasOutput(GraphIO* output) const
 {
-    return std::find(outputs.begin(), outputs.end(), output) != outputs.end();
+    return std::find(outputs_.begin(), outputs_.end(), output) != outputs_.end();
 }
 
 bool Graph::hasInput(Tensor* tensor, const std::string& opName, int opIndex) const
 {
-    std::vector<GraphIO*>::const_iterator it;
-    for (it = inputs.begin(); it != inputs.end(); it++)
+    for (size_t i = 0, n = nInputs(); i < n; i++)
     {
-        if ((*it)->getTensor() == tensor && (*it)->getOpName() == opName
-            && (*it)->getOpIndex() == opIndex)
+        if (inputs_[i]->getTensor() == tensor && inputs_[i]->getOpName() == opName
+            && inputs_[i]->getOpIndex() == opIndex)
         {
             return true;
         }
@@ -259,11 +264,10 @@ bool Graph::hasInput(Tensor* tensor, const std::string& opName, int opIndex) con
 
 bool Graph::hasOutput(Tensor* tensor, const std::string& opName, int opIndex) const
 {
-    std::vector<GraphIO*>::const_iterator it;
-    for (it = outputs.begin(); it != outputs.end(); it++)
+    for (size_t i = 0, n = nOutputs(); i < n; i++)
     {
-        if ((*it)->getTensor() == tensor && (*it)->getOpName() == opName
-            && (*it)->getOpIndex() == opIndex)
+        if (outputs_[i]->getTensor() == tensor && outputs_[i]->getOpName() == opName
+            && outputs_[i]->getOpIndex() == opIndex)
         {
             return true;
         }
@@ -273,9 +277,9 @@ bool Graph::hasOutput(Tensor* tensor, const std::string& opName, int opIndex) co
 
 void Graph::eval()
 {
-    if (!tf_session)
+    if (!tf_session_)
     {
-        throw std::runtime_error("cannot evaluate uninitialized graph");
+        throw cms::Exception("InvalidGraph") << "cannot evaluate uninitialized graph";
     }
 
     // prepare the evaluation objects
@@ -287,18 +291,18 @@ void Graph::eval()
     // clear previous outputs
     for (size_t i = 0; i < nOut; ++i)
     {
-        outputs[i]->getTensor()->reset();
+        outputs_[i]->getTensor()->reset();
     }
-    outputTensors.clear();
-    outputTensors.resize(nOut, 0);
+    outputTensors_.clear();
+    outputTensors_.resize(nOut, 0);
 
     // actual evaluation
     TF_Status* status = TF_NewStatus();
     TF_SessionRun(
-        tf_session,
+        tf_session_,
         0, // run options
-        nIn == 0 ? 0 : &inputOutputs[0], nIn == 0 ? 0 : &inputTensors[0], nIn,
-        nOut == 0 ? 0 : &outputOutputs[0], nOut == 0 ? 0 : &outputTensors[0], nOut,
+        nIn == 0 ? 0 : &inputOutputs_[0], nIn == 0 ? 0 : &inputTensors_[0], nIn,
+        nOut == 0 ? 0 : &outputOutputs_[0], nOut == 0 ? 0 : &outputTensors_[0], nOut,
         0, 0, // target ops, number of targets
         0, // run metadata
         status);
@@ -306,14 +310,14 @@ void Graph::eval()
     // check the status
     if (TF_GetCode(status) != TF_OK)
     {
-        throw std::runtime_error("error while evaluating graph: "
-            + std::string(TF_Message(status)));
+        throw cms::Exception("InvalidGraph") << "error while evaluating graph: "
+            << (TF_Message(status));
     }
 
     // sync outputs again
     for (size_t i = 0; i < nOut; ++i)
     {
-        outputs[i]->getTensor()->init(outputTensors[i]);
+        outputs_[i]->getTensor()->init(outputTensors_[i]);
     }
 
     // cleanup
@@ -322,31 +326,30 @@ void Graph::eval()
 
 void Graph::prepareEval()
 {
-    if (preparedEval)
+    if (preparedEval_)
     {
         return;
     }
 
     // clear input objects and set them again
-    inputOutputs.clear();
-    inputTensors.clear();
+    inputOutputs_.clear();
+    inputTensors_.clear();
     std::vector<GraphIO*>::iterator it;
-    for (it = inputs.begin(); it != inputs.end(); it++)
-    {
-        inputOutputs.push_back((*it)->getTFOutput());
-        inputTensors.push_back((*it)->getTensor()->getTFTensor());
+    for (size_t i = 0, n = nInputs(); i < n; i++) {
+        inputOutputs_.push_back(inputs_[i]->getTFOutput());
+        inputTensors_.push_back(inputs_[i]->getTensor()->getTFTensor());
     }
 
     // clear output objects and set them again
-    outputOutputs.clear();
-    outputTensors.clear();
-    for (it = outputs.begin(); it != outputs.end(); it++)
+    outputOutputs_.clear();
+    outputTensors_.clear();
+    for (size_t i = 0, n = nOutputs(); i < n; i++)
     {
-        outputOutputs.push_back((*it)->getTFOutput());
-        outputTensors.push_back((*it)->getTensor()->getTFTensor());
+        outputOutputs_.push_back(outputs_[i]->getTFOutput());
+        outputTensors_.push_back(outputs_[i]->getTensor()->getTFTensor());
     }
 
-    preparedEval = true;
+    preparedEval_ = true;
 }
 
 } // namespace tf
