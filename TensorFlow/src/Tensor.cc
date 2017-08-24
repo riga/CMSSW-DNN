@@ -122,8 +122,8 @@ Shape Tensor::getIndex(Shape* pos) const
     // tensor's space to a 1D index representing the memory position is:
     // pos * prod (where both pos and prod are vectors/arrays)
     // prod is cached to increase performance and calculated via:
-    // prod_i = { 1               , i = rank - 1
-    //          { prod_{i+1}^rank , 0 <= i < rank - 1
+    // prod_i = { 1                        , i = rank - 1
+    //          { prod_{i+1} * shape_{i+1} , 0 <= i < rank - 1
 
     if (empty())
     {
