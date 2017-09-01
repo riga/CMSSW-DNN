@@ -138,13 +138,13 @@ run 1000 evaluations for batch size 1000
 
 ### Installation
 
-93X is not released yet. However, you can test pre-releases such as `CMSSW_9_3_X_2017-08-19-1100` on lxplus.
+93X is not released yet. However, you can test pre-releases such as `CMSSW_9_3_X_2017-08-31-2300` on lxplus.
 
 ```bash
 source /cvmfs/cms.cern.ch/cmsset_default.sh
 
 export SCRAM_ARCH="slc6_amd64_gcc630"
-export CMSSW_VERSION="CMSSW_9_3_X_2017-08-19-1100" # pre-release
+export CMSSW_VERSION="CMSSW_9_3_X_2017-08-31-2300" # pre-release
 
 cmsrel $CMSSW_VERSION
 cd $CMSSW_VERSION/src
@@ -176,6 +176,8 @@ graph.init("/path/to/simplegraph");
 // proceed as usual
 ...
 ```
+
+**Note**: The session options `intra_op_parallelism_threads:1` and `inter_op_parallelism_threads:1` are now set by default. You can change this bahavior by overwriting them with different values.
 
 
 ##### Logging

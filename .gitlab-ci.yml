@@ -21,7 +21,7 @@ before_script:
     - docker
   variables:
     SCRAM_ARCH: slc6_amd64_gcc630
-    CMSSW_VERSION: CMSSW_9_3_X_2017-08-13-2300
+    CMSSW_VERSION: CMSSW_9_3_X_2017-08-31-2300
   script:
     - cd $CMSSW_BASE/src
     - scram b runtests

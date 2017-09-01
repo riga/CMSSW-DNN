@@ -30,6 +30,9 @@ Graph::Graph()
     , tf_graph_(nullptr)
     , tf_session_(nullptr)
 {
+    // default session options
+    sessionOptions_.push_back("intra_op_parallelism_threads:1");
+    sessionOptions_.push_back("inter_op_parallelism_threads:1");
 }
 
 
@@ -38,6 +41,11 @@ Graph::Graph(const std::string& filename, const std::string& tag)
     , tf_graph_(nullptr)
     , tf_session_(nullptr)
 {
+    // default session options
+    sessionOptions_.push_back("intra_op_parallelism_threads:1");
+    sessionOptions_.push_back("inter_op_parallelism_threads:1");
+
+    // initialize the graph
     init(filename, tag);
 }
 
