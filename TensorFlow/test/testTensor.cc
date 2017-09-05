@@ -9,6 +9,7 @@
 #include <cppunit/extensions/HelperMacros.h>
 
 #include "DNN/TensorFlow/interface/Tensor.h"
+
 #include "FWCore/Utilities/interface/Exception.h"
 
 class testTensor : public CppUnit::TestFixture

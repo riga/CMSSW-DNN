@@ -2,6 +2,7 @@ stages:
   - test
 
 before_script:
+  - set -o pipefail
   - export CI_HOME="$( pwd )"
   - git submodule update --init --recursive
   - export SCRAM_ARCH="$SCRAM_ARCH"
@@ -24,4 +25,6 @@ before_script:
     CMSSW_VERSION: CMSSW_9_3_X_2017-08-31-2300
   script:
     - cd $CMSSW_BASE/src
-    - scram b runtests
+    - 2>&1 scram b runtests | tee log.txt
+    - if [ "$?" != "0" ]; then exit "$?"; fi
+    - if [ ! -z "$( cat log.txt | grep "had ERRORS" )" ]; then exit "1"; fi

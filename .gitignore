@@ -13,4 +13,3 @@
 .nfs*
 tmp
 build
-TensorFlow/bin/data

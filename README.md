@@ -3,7 +3,7 @@
 - Main repository & issues: [gitlab.cern.ch/mrieger/CMSSW-DNN](https://gitlab.cern.ch/mrieger/CMSSW-DNN)
 - Code mirror: [github.com/riga/CMSSW-DNN](https://github.com/riga/CMSSW-DNN)
 
-This project provides a simple yet fast interface to [TensorFlow](https://www.tensorflow.org) graphs and tensors which lets you evaluate trained models right within CMSSW. It **does not depend** on a converter library or custom NN implementation. By using TensorFlow's C API (available via `/cvmfs`), you can essentially load and evaluate every model that was previously saved in both C **or** Python.
+This project provides a simple yet fast interface to [TensorFlow](https://www.tensorflow.org) and lets you evaluate trained models right within CMSSW. It **does not depend** on a converter library or custom NN implementation. By using TensorFlow's C API (available via `/cvmfs`), you can essentially load and evaluate every model that was previously saved in both C **or** Python.
 
 This interface requires CMSSW 9.3.X or greater. For lower versions see the [80X branch](/../tree/80X).
 
@@ -14,6 +14,7 @@ This interface requires CMSSW 9.3.X or greater. For lower versions see the [80X 
 - Direct interface to TensorFlow, no intermediate converter library required.
 - Fast data access and in-place operations.
 - Evaluation with multiple input and output tensors (and tensors defined as inputs multiple times).
+- Thread-safety.
 - Batching.
 - **GPU support**.
 
@@ -53,36 +54,63 @@ The tag passed to `add_meta_graph_and_variables` serves as an identifier for you
 
 ##### Evaluate your Model (in CMSSW)
 
+There are two ways to evaluate your model: *stateful* and *stateless*.
+
+Stateful means that you define inputs and outputs to the computational graph on the session object before the first `run()` call. Overhead due to repeatedly performed sanity checks is minimized. However, this approach cannot be used if thread-safety is required.
+
+For those cases, a second `run()` method is provided that leaves the session constant. See below for examples.
+
 ```cpp
 //
-// setup
+// setup (common)
 //
 
-// load and initialize the graph
+// load the graph
 tf::Graph graph("/path/to/simplegraph");
 
-// prepare input and output tensors
-tf::Shape xShape[] = {1, 10}; // 1 = single batch
+// create a session
+tf::Session session(&graph);
+
+// prepare input tensors
+tf::Shape xShape[] = { 1, 10 }; // 1 = single batch
 tf::Tensor* x = new tf::Tensor(2, xShape);
-graph.defineInput(x, "input");
-
-// no shape info required for output
-tf::Tensor* y = new tf::Tensor();
-graph.defineOutput(y, "output");
-
-
-//
-// evaluation
-//
 
 // example: fill a single batch of the input tensor with consecutive numbers
 // -> [[0, 1, 2, ...]]
 std::vector<float> values = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
 x->setVector<float>(1, 0, values); // axis 1, batch 0, values
 
-// evaluation call
-// this does not return anything but changes the output tensor(s) in-place
-graph.eval();
+// prepare output tensors, no shape required
+tf::Tensor* y = new tf::Tensor();
+
+
+//
+// stateful evaluation
+//
+
+// define input and outputs on the session
+session.defineInput(x, "input");
+session.defineOutput(y, "output");
+
+// run it
+session.run();
+
+
+//
+// stateless evaluation
+//
+
+// define input and outputs
+tf::IOs inputs = { session.createIO(x, "input") };
+tf::IOs outputs = { session.createIO(y, "output") };
+
+// run it
+session.run(inputs, outputs);
+
+
+//
+// process outputs (common)
+//
 
 // print the output
 // -> [[float]]
@@ -93,7 +121,7 @@ delete x;
 delete y;
 ```
 
-For more examples, see [`test/testTensor.cc`](./TensorFlow/test/testTensor.cc) and [`test/testGraph.cc`](./TensorFlow/test/testGraph.cc).
+For more examples, see [`test/testSession.cc`](./TensorFlow/test/testSession.cc) and [`test/testTensor.cc`](./TensorFlow/test/testTensor.cc).
 
 
 ##### Note on Keras
@@ -158,26 +186,20 @@ scram b
 
 ### Important Notes
 
-##### TensorFlow uses all GPUs / CPU threads
+##### Multi-threading
 
-This is the default TensorFlow behavior. To run on a single device, do:
+If you want TensorFlow to use multiple threads, you can pass `true` as the second argument to the Session constructor. By default, only one thread is used.
 
 ```cpp
-// create a graph but do not pass a path yet
-tf::Graph graph();
+// load the graph
+tf::Graph graph("/path/to/graph");
 
-// set session options
-graph.addSessionOption("intra_op_parallelism_threads:1");
-graph.addSessionOption("inter_op_parallelism_threads:1");
-
-// initialize the graph now
-graph.init("/path/to/simplegraph");
+// create a session and use multi-threading
+tf::Session session(&graph, true);
 
 // proceed as usual
 ...
 ```
-
-**Note**: The session options `intra_op_parallelism_threads:1` and `inter_op_parallelism_threads:1` are now set by default. You can change this bahavior by overwriting them with different values.
 
 
 ##### Logging
@@ -191,3 +213,5 @@ By default, only error logs from the TensorFlow C API are shown. This can be cha
 | 2                            | warning         |
 | 3 (default)                  | error           |
 | 4                            | none            |
+
+Forwarding to the `MessageLogger` service is not yet possible.
