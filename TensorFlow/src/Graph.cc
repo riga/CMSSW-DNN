@@ -44,6 +44,16 @@ void Graph::init(const std::string& exportDir, const std::string& tag)
     // session options
     TF_SessionOptions* tf_sessionOptions = TF_NewSessionOptions();
 
+    // disable multi-threading for the dummy session
+    // see tf::Session::init for more info
+    const char opts[] = "\020\001\050\001";
+    TF_SetConfig(tf_sessionOptions, opts, 4, status);
+    if (TF_GetCode(status) != TF_OK)
+    {
+        throw cms::Exception("InvalidSessionOptions")
+            << "error while setting dummy session options: " << TF_Message(status);
+    }
+
     // initialize an empty graph
     tf_graph_ = TF_NewGraph();
 
