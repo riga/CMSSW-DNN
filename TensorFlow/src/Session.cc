@@ -154,14 +154,6 @@ IO* Session::createIO(Tensor* tensor, const std::string& opName, int opIndex) co
 
 IO* Session::addInput(Tensor* tensor, const std::string& opName, int opIndex)
 {
-    // the tensor must be initialized
-    if (tensor->empty())
-    {
-        throw cms::Exception("InvalidTensor")
-            << "cannot create input using uninitialized tensor for operation: " << opName << ":"
-            << opIndex;
-    }
-
     // check for duplicate
     if (hasInput(tensor, opName, opIndex))
     {
@@ -181,7 +173,7 @@ IO* Session::addInput(Tensor* tensor, const std::string& opName, int opIndex)
 
 IO* Session::addOutput(Tensor* tensor, const std::string& opName, int opIndex)
 {
-    // check for duplicates
+    // check for duplicate
     if (hasOutput(tensor, opName, opIndex))
     {
         throw cms::Exception("InvalidOutput") << "duplicate output tensor for operation: "
