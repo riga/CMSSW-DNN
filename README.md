@@ -61,6 +61,8 @@ Stateful means that you define inputs and outputs to the computational graph on 
 For those cases, a second `run()` method is provided that leaves the session constant. See below for examples.
 
 ```cpp
+#include "DNN/TensorFlow/interface/TensorFlow.h"
+
 //
 // setup (common)
 //
