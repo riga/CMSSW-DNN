@@ -89,7 +89,7 @@ void testPerformance::checkAll()
     // stateful evaluation with multiple threads
     //
 
-    std::cout << "test multi-threaded (2) stateful run calls" << std::endl << std::endl;
+    std::cout << "test multi-threaded stateful run calls" << std::endl << std::endl;
 
     tf::Session s(&g, true);
 

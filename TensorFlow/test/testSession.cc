@@ -183,6 +183,12 @@ void testSession::checkAll()
     CPPUNIT_ASSERT(*y->getPtr<float>(0, 0) == 92);
     CPPUNIT_ASSERT(*y->getPtr<float>(1, 0) == 182);
 
+    // inputs can also be passed by value
+    *c->getPtr<float>() = 3.0;
+    s.run({ xIn, cIn }, outputs);
+    CPPUNIT_ASSERT(*y->getPtr<float>(0, 0) == 138);
+    CPPUNIT_ASSERT(*y->getPtr<float>(1, 0) == 273);
+
 
     // cleanup
     delete x;

@@ -105,7 +105,7 @@ public:
     void run();
 
     // run a stateless evaluation of the default graph with inputs and outputs passed as arguments
-    void run(IOs& inputs, IOs& outputs) const;
+    void run(const IOs inputs, const IOs& outputs) const;
 
 private:
     // flag that denotes if the stateful evaluation is prepared

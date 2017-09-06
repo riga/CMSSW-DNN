@@ -335,7 +335,7 @@ void Session::run()
     TF_DeleteStatus(status);
 }
 
-void Session::run(IOs& inputs, IOs& outputs) const
+void Session::run(const IOs inputs, const IOs& outputs) const
 {
     if (empty())
     {
