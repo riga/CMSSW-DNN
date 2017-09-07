@@ -11,6 +11,7 @@
 
 #include <algorithm>
 #include <vector>
+#include <cstring>
 
 #include <tensorflow/c/c_api.h>
 
@@ -39,8 +40,9 @@ public:
     // destructor
     ~Session();
 
-    // initialize the tensorflow session object with a graph, ownership is not transferred
-    void init(Graph* graph, bool threads = false);
+    // initialize the tensorflow session object with a graph, ownership is not transferred, returns
+    // true when the variable initialization succeeded, false otherwise
+    bool init(Graph* graph, bool threads = false);
 
     // reset the tensorflow session and default graph objects
     void reset();
@@ -50,6 +52,11 @@ public:
     {
         return tf_session_ == nullptr;
     }
+
+    // initializes all variables using configurable initializer ops that default to the SavedModel
+    // values, returns true when the ops were found, false otherwise
+    bool initVariables(const std::string& restoreOpName = "save/restore_all",
+        const std::string& varOpName = "save/Const");
 
     // creates an input/output object that is connected to an operation with name and index, but
     // does not add it yet, ownership is transferred to the caller
@@ -127,7 +134,7 @@ private:
     std::vector<TF_Tensor*> inputTensors_;
     std::vector<TF_Tensor*> outputTensors_;
 
-    // prepares the cache vectors that are required for the evaluation
+    // prepares the cache vectors that are required for the stateful evaluation
     void prepare();
 };
 

@@ -31,9 +31,15 @@ Session::~Session()
     reset();
 }
 
-void Session::init(Graph* graph, bool threads)
+bool Session::init(Graph* graph, bool threads)
 {
     reset();
+
+    // the graph must not be empty
+    if (!graph || graph->empty())
+    {
+        throw cms::Exception("InvalidGraph") << "cannot initialize session with empty graph";
+    }
 
     // status to check tensorflow calls
     TF_Status* status = TF_NewStatus();
@@ -63,28 +69,15 @@ void Session::init(Graph* graph, bool threads)
             << TF_Message(status);
     }
 
-    // initialize all variables
-    TF_Operation* tf_initOp = graph->getTFOperation("init");
-    TF_SessionRun(
-        tf_session_,
-        nullptr, // run options
-        nullptr, nullptr, 0, // inputs
-        nullptr, nullptr, 0, // outputs
-        &tf_initOp, 1, // target ops, number of targets
-        nullptr, // run metadata
-        status);
-    if (TF_GetCode(status) != TF_OK)
-    {
-        throw cms::Exception("InvalidSession") << "error while initializing variables: "
-            << TF_Message(status);
-    }
-
     // store the graph pointer
     graph_ = graph;
 
     // some cleanup
     TF_DeleteSessionOptions(tf_sessionOptions);
     TF_DeleteStatus(status);
+
+    // initialize all variables using all init ops and return its output
+    return initVariables();
 }
 
 void Session::reset()
@@ -128,6 +121,82 @@ void Session::reset()
 
     // reset the default graph, do not delete it
     graph_ = nullptr;
+}
+
+bool Session::initVariables(const std::string& restoreOpName, const std::string& varOpName)
+{
+    // restoreOp does the actual variable restoring, varOp is used to feed the variables file
+    TF_Operation* tf_restoreOp = nullptr;
+    TF_Operation* tf_varOp = nullptr;
+
+    // find the two ops by looking for their last occurance in terms of the number postfix
+    size_t i = 0;
+    while (true)
+    {
+        std::string postfix = i == 0 ? "" : ("_" + std::to_string(i));
+        TF_Operation* tf_restoreOpDummy = graph_->getTFOperation(restoreOpName + postfix);
+        TF_Operation* tf_varOpDummy = graph_->getTFOperation(varOpName + postfix);
+        if (tf_restoreOpDummy && tf_varOpDummy)
+        {
+            tf_restoreOp = tf_restoreOpDummy;
+            tf_varOp = tf_varOpDummy;
+            i++;
+        }
+        else
+        {
+            break;
+        }
+    }
+
+    // ops found?
+    if (!tf_restoreOp || !tf_varOp)
+    {
+        return false;
+    }
+
+    // status to check tensorflow calls
+    TF_Status* status = TF_NewStatus();
+
+    // create a string tensor holding the variable file path
+    std::string path = graph_->getExportDir() + "/variables/variables";
+    size_t pathSize = path.size();
+    size_t encodedPathSize = TF_StringEncodedSize(pathSize);
+    TF_Tensor* tf_varTensor = TF_AllocateTensor(TF_STRING, 0, 0, 8 + encodedPathSize);
+    void* data = TF_TensorData(tf_varTensor);
+    memset(data, 0, 8);
+    TF_StringEncode(path.c_str(), pathSize, 8 + (char*)data, encodedPathSize, status);
+    if (TF_GetCode(status) != TF_OK)
+    {
+        throw cms::Exception("InvalidString") << "error while encoding path string: "
+            << TF_Message(status);
+    }
+
+    // create an output object around the varOp
+    TF_Output tf_out;
+    tf_out.oper = tf_varOp;
+    tf_out.index = 0;
+
+    // run the ops
+    TF_SessionRun(
+        tf_session_,
+        nullptr, // run options
+        &tf_out, &tf_varTensor, 1, // inputs
+        nullptr, nullptr, 0, // outputs
+        &tf_restoreOp, 1, // target ops, number of targets
+        nullptr, // run metadata
+        status);
+
+    if (TF_GetCode(status) != TF_OK)
+    {
+        throw cms::Exception("InvalidSession") << "error while initializing variables: "
+            << TF_Message(status);
+    }
+
+    // some cleanup
+    TF_DeleteTensor(tf_varTensor);
+    TF_DeleteStatus(status);
+
+    return true;
 }
 
 IO* Session::createIO(Tensor* tensor, const std::string& opName, int opIndex) const
