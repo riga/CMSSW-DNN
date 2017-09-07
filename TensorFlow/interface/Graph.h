@@ -50,6 +50,12 @@ public:
         return tf_graph_;
     }
 
+    // returns the exportDir that was used to create the current tensorflow graph object
+    inline std::string getExportDir() const
+    {
+        return exportDir_;
+    }
+
     // returns the pointer to a tensorflow operation object defined by its name, ownership is not
     // transferred
     TF_Operation* getTFOperation(const std::string& name);
@@ -57,6 +63,9 @@ public:
 private:
     // pointer to the tensorflow graph object
     TF_Graph* tf_graph_;
+
+    // the exportDir of the current graph
+    std::string exportDir_;
 };
 
 } // namepace tf

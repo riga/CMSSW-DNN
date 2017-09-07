@@ -13,11 +13,13 @@ namespace tf
 
 Graph::Graph()
     : tf_graph_(nullptr)
+    , exportDir_("")
 {
 }
 
 Graph::Graph(const std::string& filename, const std::string& tag)
     : tf_graph_(nullptr)
+    , exportDir_("")
 {
     // initialize the graph
     init(filename, tag);
@@ -82,6 +84,13 @@ void Graph::init(const std::string& exportDir, const std::string& tag)
             << TF_Message(status);
     }
 
+    // store the exportDir
+    exportDir_ = exportDir;
+    if (exportDir_.back() == '/')
+    {
+        exportDir_ = exportDir_.substr(0, exportDir_.size() - 1);
+    }
+
     // some cleanup
     TF_DeleteStatus(status);
     TF_DeleteSessionOptions(tf_sessionOptions);
@@ -95,6 +104,9 @@ void Graph::reset()
         TF_DeleteGraph(tf_graph_);
         tf_graph_ = nullptr;
     }
+
+    // reset the exportDir
+    exportDir_ = "";
 }
 
 TF_Operation* Graph::getTFOperation(const std::string& name)
