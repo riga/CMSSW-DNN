@@ -168,13 +168,13 @@ run 1000 evaluations for batch size 1000
 
 ### Installation
 
-93X is not released yet. However, you can test pre-releases such as `CMSSW_9_3_X_2017-09-11-1100` on lxplus.
+Any CMSSW 93X version will work:
 
 ```bash
 source /cvmfs/cms.cern.ch/cmsset_default.sh
 
 export SCRAM_ARCH="slc6_amd64_gcc630"
-export CMSSW_VERSION="CMSSW_9_3_X_2017-09-11-1100" # pre-release
+export CMSSW_VERSION="CMSSW_9_3_0"
 
 cmsrel $CMSSW_VERSION
 cd $CMSSW_VERSION/src
