@@ -1,6 +1,6 @@
 /*
  * Test of the TensorFlow interface performance.
- * Based on TensorFlow C API 1.1.
+ * Based on TensorFlow C++ API 1.3.
  * For more info, see https://gitlab.cern.ch/mrieger/CMSSW-DNN.
  *
  * Author: Marcel Rieger
@@ -31,6 +31,8 @@ public:
         gettimeofday(t, NULL);
         return t->tv_sec * 1000 + t->tv_usec / 1000;
     }
+
+    void runBatches(bool singleThreaded);
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(testPerformance);
@@ -69,121 +71,66 @@ void testPerformance::tearDown()
     }
 }
 
-void testPerformance::checkAll()
+void testPerformance::runBatches(bool multiThreaded)
 {
+    std::cout << "--------------------------------------------" << std::endl;
+    std::cout << (multiThreaded ? "multi" : "single") << "-threaded performance:" << std::endl
+              << std::endl;
+
     struct timeval t;
 
     // do the testing for various different batch sizes
     int n = 1000;
     int batchSizes[] = { 1, 10, 100, 1000 };
 
-    // load the graph
-    tf::Graph g(dataPath + "/largegraph");
-
-    // create tensors
-    tf::Tensor* x = new tf::Tensor();
-    tf::Tensor* y = new tf::Tensor();
-
-
-    //
-    // stateful evaluation with multiple threads
-    //
-
-    std::cout << "test multi-threaded stateful run calls" << std::endl << std::endl;
-
-    tf::Session s(&g, true);
-
-    // add the output
-    s.addOutput(y, "output");
+    tf::setLogging();
+    std::string exportDir = dataPath + "/largegraph";
+    tf::MetaGraphDef* metaGraph = tf::loadMetaGraph(exportDir, multiThreaded);
+    tf::Session* session = tf::createSession(metaGraph, exportDir, multiThreaded);
 
     for (size_t i = 0; i < 4; i++)
     {
         std::cout << "run " << n << " evaluations for batch size " << batchSizes[i] << std::endl;
 
-        // init the input tensor and add it to the graph
-        tf::Shape xShape[] = { batchSizes[i], 100 };
-        x->init(2, xShape);
-        s.addInput(x, "input");
-
-        // set identical values per batch
-        std::vector<float> values;
-        for (float v = 0; v < 100; v++)
+        // create the input tensor and add it to the graph
+        tf::Tensor x(tf::DT_FLOAT, { batchSizes[i], 100 });
+        float* d = x.flat<float>().data();
+        for (size_t i = 0; i < 10; i++, d++)
         {
-            values.push_back(v);
+            *d = float(i);
         }
+
+        // set values
         for (int b = 0; b < batchSizes[i]; b++)
         {
-            x->setVector<float>(1, b, values);
+            for (int j = 0; j < 100; j++)
+            {
+                x.matrix<float>()(b, j) = (float)(b + j);
+            }
         }
 
         // measure the run time with n repititions
         long int t0 = getTime(&t);
         for (int j = 0; j < n; j++)
         {
-            s.run();
-        }
-        long int t1 = getTime(&t);
-        std::cout << "-> " << (t1 - t0) / (float)n << " ms per batch" << std::endl
-                  << std::endl;
-
-        // remove the input tensor, it will re-redefined with a new batch size in the next iteration
-        s.removeInput(x, "input");
-    }
-
-
-    //
-    // stateless evaluation with multiple threads
-    //
-
-    std::cout << "----------------------------------------" << std::endl;
-    std::cout << "test single-threaded stateless run calls" << std::endl << std::endl;
-
-    // reset and add the graph again
-    s.reset();
-    s.init(&g);
-
-    // create the inputs
-    tf::IO* xIn = s.createIO(x, "input");
-    tf::IOs inputs = { xIn };
-
-    // create the outputs
-    tf::IO* yOut = s.createIO(y, "output");
-    tf::IOs outputs = { yOut };
-
-    // do the testing for various different batch sizes
-    for (size_t i = 0; i < 4; i++)
-    {
-        std::cout << "run " << n << " evaluations for batch size " << batchSizes[i] << std::endl;
-
-        // init the input tensor
-        tf::Shape xShape[] = { batchSizes[i], 100 };
-        x->init(2, xShape);
-
-        // set identical values per batch
-        std::vector<float> values;
-        for (float v = 0; v < 100; v++)
-        {
-            values.push_back(v);
-        }
-        for (int b = 0; b < batchSizes[i]; b++)
-        {
-            x->setVector<float>(1, b, values);
-        }
-
-        // measure the run time with n repititions
-        long int t0 = getTime(&t);
-        for (int j = 0; j < n; j++)
-        {
-            s.run(inputs, outputs);
+            tf::run(session, { { "input", x } }, { "output:0" }, nullptr);
         }
         long int t1 = getTime(&t);
         std::cout << "-> " << (t1 - t0) / (float)n << " ms per batch" << std::endl
                   << std::endl;
     }
-
 
     // cleanup
-    delete x;
-    delete y;
-    delete yOut;
+    session->Close();
+    delete session;
+    delete metaGraph;
+}
+
+void testPerformance::checkAll()
+{
+    // single-threaded
+    runBatches(false);
+
+    // multi-threaded
+    runBatches(true);
 }
