@@ -3,9 +3,9 @@
 - Main repository & issues: [gitlab.cern.ch/mrieger/CMSSW-DNN](https://gitlab.cern.ch/mrieger/CMSSW-DNN)
 - Code mirror: [github.com/riga/CMSSW-DNN](https://github.com/riga/CMSSW-DNN)
 
-This project provides a simple yet fast interface to [TensorFlow](https://www.tensorflow.org) and lets you evaluate trained models right within CMSSW. It **does not depend** on a converter library or custom NN implementation. By using TensorFlow's C API (available via `/cvmfs`), you can essentially load and evaluate every model that was previously saved in both C **or** Python.
+This project provides a simple yet fast interface to [TensorFlow](https://www.tensorflow.org) and lets you evaluate trained models right within CMSSW. It **does not depend** on a converter library or custom NN implementation. By using TensorFlow's C++ API (available via `/cvmfs`), you can essentially load and evaluate every model that was previously saved in both C **or** Python.
 
-This interface requires CMSSW 9.3.X or greater. For lower versions see the [80X branch](/../tree/80X).
+This interface requires CMSSW 9.4.X or greater. For the C API based version see the [c_api branch](/../tree/c_api). For lower versions see the [80X branch](/../tree/80X).
 
 
 ##### Features in a nutshell
@@ -54,76 +54,54 @@ The tag passed to `add_meta_graph_and_variables` serves as an identifier for you
 
 ##### Evaluate your Model (in CMSSW)
 
-There are two ways to evaluate your model: *stateful* and *stateless*.
-
-Stateful means that you define inputs and outputs to the computational graph on the session object before the first `run()` call. Overhead due to repeatedly performed sanity checks is minimized. However, this approach cannot be used if thread-safety is required.
-
-For those cases, a second `run()` method is provided that leaves the session constant. See below for examples.
-
 ```cpp
 #include "DNN/TensorFlow/interface/TensorFlow.h"
 
 //
-// setup (common)
+// setup
 //
 
-// load the graph
-tf::Graph graph("/path/to/simplegraph");
+// load the meta graph, i.e. an object that contains the computational graph
+// as well as some meta information
+tf::MetaGraphDef* metaGraph = tf::loadMetaGraph("/path/to/simplegraph");
 
 // create a session
-tf::Session session(&graph);
+// we need to pass the export directory again so that the session can
+// properly initialize all variables
+tf::Session* session = tf::createSession(metaGraph, "/path/to/simplegraph");
 
-// prepare input tensors
-tf::Shape xShape[] = { 1, 10 }; // 1 = single batch
-tf::Tensor* x = new tf::Tensor(2, xShape);
+// create an input tensor
+tf::Tensor input(tf::DT_FLOAT, { 1, 10 }); // single batch of dimension 10
 
 // example: fill a single batch of the input tensor with consecutive numbers
 // -> [[0, 1, 2, ...]]
-std::vector<float> values = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
-x->setVector<float>(1, 0, values); // axis 1, batch 0, values
-
-// prepare output tensors, no shape required
-tf::Tensor* y = new tf::Tensor();
+for (size_t i = 0; i < 10; i++) input.matrix<float>()(0, i) = float(i);
 
 
 //
-// stateful evaluation
+// evaluation
 //
 
-// define input and outputs on the session
-session.defineInput(x, "input");
-session.defineOutput(y, "output");
-
-// run it
-session.run();
+std::vector<tf::Tensor> outputs;
+tf::run(session, { { "input", input } }, { "output" }, &outputs);
 
 
 //
-// stateless evaluation
-//
-
-// define input and outputs
-tf::IOs inputs = { session.createIO(x, "input") };
-tf::IOs outputs = { session.createIO(y, "output") };
-
-// run it
-session.run(inputs, outputs);
-
-
-//
-// process outputs (common)
+// process outputs
 //
 
 // print the output
 // -> [[float]]
-std::cout << *y->getPtr<float>(0, 0) << std::endl;
+std::cout << outputs[0].matrix<float>()(0, 0) << std::endl;
+// -> 46.
 
 // cleanup
-delete x;
-delete y;
+session->Close();
+delete session;
+delete metaGraph;
 ```
 
-For more examples, see [`test/testSession.cc`](./TensorFlow/test/testSession.cc) and [`test/testTensor.cc`](./TensorFlow/test/testTensor.cc).
+For more examples, see [`test/testLoading.cc`](./TensorFlow/test/testLoading.cc).
 
 
 ##### Note on Keras
@@ -152,6 +130,23 @@ builder.save()
 A performance test (CPU only for now) is located at [`test/testPerformance.cc`](./TensorFlow/test/testPerformance.cc) and runs 1k evaluations of a feed-forward network with 100 input features, 5 hidden elu layers with 200 nodes each, a softmax output with 10 nodes, and multiple batch sizes. Of course, the actual performance is hardware dependent.
 
 ```
+single-threaded performance:
+
+run 1000 evaluations for batch size 1
+-> 0.118 ms per batch
+
+run 1000 evaluations for batch size 10
+-> 0.607 ms per batch
+
+run 1000 evaluations for batch size 100
+-> 3.83 ms per batch
+
+run 1000 evaluations for batch size 1000
+-> 36.687 ms per batch
+
+--------------------------------------------
+multi-threaded performance:
+
 run 1000 evaluations for batch size 1
 -> 0.134 ms per batch
 
@@ -168,13 +163,13 @@ run 1000 evaluations for batch size 1000
 
 ### Installation
 
-Any CMSSW 93X version will work:
+Any CMSSW 94X version will work (currently only available on integration branches):
 
 ```bash
 source /cvmfs/cms.cern.ch/cmsset_default.sh
 
 export SCRAM_ARCH="slc6_amd64_gcc630"
-export CMSSW_VERSION="CMSSW_9_3_0"
+export CMSSW_VERSION="CMSSW_9_4_X_2017-10-09-1100"
 
 cmsrel $CMSSW_VERSION
 cd $CMSSW_VERSION/src
@@ -190,14 +185,14 @@ scram b
 
 ##### Multi-threading
 
-If you want TensorFlow to use multiple threads, you can pass `true` as the second argument to the Session constructor. By default, only one thread is used.
+If you want TensorFlow to use multiple threads, you can pass `true` as the second argument to `tf::loadMetaGraph`, and as the third argument to `tf::createSession`. By default, only one thread is used.
 
 ```cpp
 // load the graph
-tf::Graph graph("/path/to/graph");
+tf::MetaGraphDef* metaGraph = tf::loadMetaGraph("/path/to/simplegraph", true);
 
 // create a session and use multi-threading
-tf::Session session(&graph, true);
+tf::Session* session = tf::createSession(metaGraph, "/path/to/simplegraph", true);
 
 // proceed as usual
 ...
@@ -206,14 +201,14 @@ tf::Session session(&graph, true);
 
 ##### Logging
 
-By default, only error logs from the TensorFlow C API are shown. This can be changed via setting the `TF_CPP_MIN_LOG_LEVEL` environment varibale before calling (e.g.) `cmsRun`:
+By default, TensorFlow logging is quite verbose. This can be changed via setting the `TF_CPP_MIN_LOG_LEVEL` environment varibale before calling (e.g.) `cmsRun`, or via calling `tf::setLogging(level)` in your code. Log levels:
 
 | `TF_CPP_MIN_LOG_LEVEL` value | Verbosity level |
 | ---------------------------- | --------------- |
-| 0                            | debug           |
-| 1                            | info            |
-| 2                            | warning         |
-| 3 (default)                  | error           |
-| 4                            | none            |
+| "0"                          | debug           |
+| "1" (default)                | info            |
+| "2"                          | warning         |
+| "3"                          | error           |
+| "4"                          | none            |
 
 Forwarding to the `MessageLogger` service is not yet possible.
