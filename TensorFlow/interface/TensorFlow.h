@@ -24,7 +24,8 @@ namespace tf
 
 using namespace tensorflow;
 
-typedef std::vector<std::pair<std::string, Tensor> > NamedTensorList;
+typedef std::pair<std::string, Tensor> NamedTensor;
+typedef std::vector<NamedTensor> NamedTensorList;
 
 // set the tensorflow log level
 void setLogging(const std::string& level = "3");
@@ -53,10 +54,23 @@ void run(Session* session, const NamedTensorList& inputs,
     const std::vector<std::string>& outputNames, const std::vector<std::string>& targetNodes,
     std::vector<Tensor>* outputs);
 
+// run the session with inputNames, inputTensors, outputNames and targetNodes, and store output
+// tensors
+// throws a cms exception when not successful
+void run(Session* session, const std::vector<std::string>& inputNames,
+    const std::vector<Tensor>& inputTensors, const std::vector<std::string>& outputNames,
+    const std::vector<std::string>& targetNodes, std::vector<Tensor>* outputs);
+
 // run the session with inputs and outputNames, and store output tensors
 // throws a cms exception when not successful
 void run(Session* session, const NamedTensorList& inputs,
     const std::vector<std::string>& outputNames, std::vector<Tensor>* outputs);
+
+// run the session with inputNames, inputTensors and outputNames, and store output tensors
+// throws a cms exception when not successful
+void run(Session* session, const std::vector<std::string>& inputNames,
+    const std::vector<Tensor>& inputTensors, const std::vector<std::string>& outputNames,
+    std::vector<Tensor>* outputs);
 
 } // namespace tf
 

@@ -128,10 +128,35 @@ void run(Session* session, const NamedTensorList& inputs,
     }
 }
 
+void run(Session* session, const std::vector<std::string>& inputNames,
+    const std::vector<Tensor>& inputTensors, const std::vector<std::string>& outputNames,
+    const std::vector<std::string>& targetNodes, std::vector<Tensor>* outputs)
+{
+    if (inputNames.size() != inputTensors.size())
+    {
+        throw cms::Exception("InvalidInput") << "numbers of input names and tensors not equal";
+    }
+
+    NamedTensorList inputs;
+    for (size_t i = 0; i < inputNames.size(); i++)
+    {
+        inputs.push_back(NamedTensor(inputNames[i], inputTensors[i]));
+    }
+
+    run(session, inputs, outputNames, targetNodes, outputs);
+}
+
 void run(Session* session, const NamedTensorList& inputs,
     const std::vector<std::string>& outputNames, std::vector<Tensor>* outputs)
 {
     run(session, inputs, outputNames, {}, outputs);
+}
+
+void run(Session* session, const std::vector<std::string>& inputNames,
+    const std::vector<Tensor>& inputTensors, const std::vector<std::string>& outputNames,
+    std::vector<Tensor>* outputs)
+{
+    run(session, inputNames, inputTensors, outputNames, {}, outputs);
 }
 
 } // namespace tf
