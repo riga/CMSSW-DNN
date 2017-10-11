@@ -109,6 +109,23 @@ Session* createSession(MetaGraphDef* metaGraph, const std::string& exportDir, bo
     return session;
 }
 
+bool closeSession(Session*& session)
+{
+    if (session == nullptr)
+    {
+        return true;
+    }
+
+    // close and delete the session
+    Status status = session->Close();
+    delete session;
+
+    // reset the pointer
+    session = nullptr;
+
+    return status.ok();
+}
+
 void run(Session* session, const NamedTensorList& inputs,
     const std::vector<std::string>& outputNames, const std::vector<std::string>& targetNodes,
     std::vector<Tensor>* outputs)
