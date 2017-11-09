@@ -32,7 +32,7 @@ public:
         return t->tv_sec * 1000 + t->tv_usec / 1000;
     }
 
-    void runBatches(bool singleThreaded);
+    void runBatches(int nThreads);
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(testPerformance);
@@ -71,10 +71,10 @@ void testPerformance::tearDown()
     }
 }
 
-void testPerformance::runBatches(bool multiThreaded)
+void testPerformance::runBatches(int nThreads)
 {
     std::cout << "--------------------------------------------" << std::endl;
-    std::cout << (multiThreaded ? "multi" : "single") << "-threaded performance:" << std::endl
+    std::cout << "check performance with " << nThreads << " threads:" << std::endl
               << std::endl;
 
     struct timeval t;
@@ -83,17 +83,17 @@ void testPerformance::runBatches(bool multiThreaded)
     int n = 1000;
     int batchSizes[] = { 1, 10, 100, 1000 };
 
-    tf::setLogging();
+    tensorflow::setLogging();
     std::string exportDir = dataPath + "/largegraph";
-    tf::MetaGraphDef* metaGraph = tf::loadMetaGraph(exportDir, multiThreaded);
-    tf::Session* session = tf::createSession(metaGraph, exportDir, multiThreaded);
+    tensorflow::MetaGraphDef* metaGraph = tensorflow::loadMetaGraph(exportDir, tensorflow::kSavedModelTagServe, nThreads);
+    tensorflow::Session* session = tensorflow::createSession(metaGraph, exportDir, nThreads);
 
     for (size_t i = 0; i < 4; i++)
     {
         std::cout << "run " << n << " evaluations for batch size " << batchSizes[i] << std::endl;
 
         // create the input tensor and add it to the graph
-        tf::Tensor x(tf::DT_FLOAT, { batchSizes[i], 100 });
+        tensorflow::Tensor x(tensorflow::DT_FLOAT, { batchSizes[i], 100 });
         float* d = x.flat<float>().data();
         for (size_t i = 0; i < 10; i++, d++)
         {
@@ -113,7 +113,7 @@ void testPerformance::runBatches(bool multiThreaded)
         long int t0 = getTime(&t);
         for (int j = 0; j < n; j++)
         {
-            tf::run(session, { { "input", x } }, { "output:0" }, nullptr);
+            tensorflow::run(session, { { "input", x } }, { "output:0" }, nullptr);
         }
         long int t1 = getTime(&t);
         std::cout << "-> " << (t1 - t0) / (float)n << " ms per batch" << std::endl
@@ -129,8 +129,8 @@ void testPerformance::runBatches(bool multiThreaded)
 void testPerformance::checkAll()
 {
     // single-threaded
-    runBatches(false);
+    runBatches(1);
 
     // multi-threaded
-    runBatches(true);
+    runBatches(0);
 }

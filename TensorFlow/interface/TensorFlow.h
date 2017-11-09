@@ -28,23 +28,41 @@ typedef std::vector<NamedTensor> NamedTensorList;
 // set the tensorflow log level
 void setLogging(const std::string& level = "3");
 
-// updates the config of sessionOptions so that it uses a single thread
-void setThreading(SessionOptions& sessionOptions, int nThreads);
+// updates the config of sessionOptions so that it uses nThreads and if 1, sets the thread pool to
+// singleThreadPool
+void setThreading(SessionOptions& sessionOptions, int nThreads,
+    const std::string& singleThreadPool = "no_threads");
 
-// loads a meta graph definition saved at exportDir using the SavedModel interface for a tag
+// loads a meta graph definition saved at exportDir using the SavedModel interface for a tag and
+// predefined sessionOptions
 // transfers ownership
-MetaGraphDef* loadMetaGraph(const std::string& exportDir, bool multiThreaded = false,
-    const std::string& tag = kSavedModelTagServe);
+MetaGraphDef* loadMetaGraph(const std::string& exportDir, const std::string& tag,
+    SessionOptions& sessionOptions);
 
-// return a new, empty session
+// loads a meta graph definition saved at exportDir using the SavedModel interface for a tag and
+// nThreads
 // transfers ownership
-Session* createSession(bool multiThreaded = false);
+MetaGraphDef* loadMetaGraph(const std::string& exportDir,
+    const std::string& tag = kSavedModelTagServe, int nThreads = 1);
 
-// return a new session that contains an already loaded meta graph whose exportDir must be given in
-// order to load and initialize the variables within the session
+// return a new, empty session using predefined sessionOptions
+// transfers ownership
+Session* createSession(SessionOptions& sessionOptions);
+
+// return a new, empty session with nThreads
+// transfers ownership
+Session* createSession(int nThreads = 1);
+
+// return a new session that will contain an already loaded meta graph whose exportDir must be given in
+// order to load and initialize the variables, sessionOptions are predefined
 // transfers ownership
 Session* createSession(MetaGraphDef* metaGraph, const std::string& exportDir,
-    bool multiThreaded = false);
+    SessionOptions& sessionOptions);
+
+// return a new session that will contain an already loaded meta graph whose exportDir must be given in
+// order to load and initialize the variables
+// transfers ownership
+Session* createSession(MetaGraphDef* metaGraph, const std::string& exportDir, int nThreads = 1);
 
 // closes a session, calls its destructor, resets the pointer, and returns true on success
 bool closeSession(Session*& session);
@@ -74,8 +92,5 @@ void run(Session* session, const std::vector<std::string>& inputNames,
     std::vector<Tensor>* outputs);
 
 } // namespace tensorflow
-
-// use a namespace alias
-namespace tf = tensorflow;
 
 #endif // DNN_TENSORFLOW_TENSORFLOW_H

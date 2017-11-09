@@ -16,48 +16,62 @@ void setLogging(const std::string& level)
     setenv("TF_CPP_MIN_LOG_LEVEL", level.c_str(), 0);
 }
 
-void setThreading(SessionOptions& sessionOptions, int nThreads)
+void setThreading(SessionOptions& sessionOptions, int nThreads,
+    const std::string& singleThreadPool)
 {
+    // set number of threads used for intra and inter operation communication
     sessionOptions.config.set_intra_op_parallelism_threads(nThreads);
     sessionOptions.config.set_inter_op_parallelism_threads(nThreads);
+
+    // when exactly one thread is requested use a custom thread pool
+    if (nThreads == 1 && !singleThreadPool.empty())
+    {
+        // check for known thread pools
+        if (singleThreadPool != "no_threads" && singleThreadPool != "tbb")
+        {
+            throw cms::Exception("UnknownThreadPool")
+                << "thread pool '" << singleThreadPool << "' unknown, use 'no_threads' or 'tbb'";
+        }
+        sessionOptions.target = singleThreadPool;
+    }
 }
 
-MetaGraphDef* loadMetaGraph(const std::string& exportDir, bool multiThreaded,
-    const std::string& tag)
+MetaGraphDef* loadMetaGraph(const std::string& exportDir, const std::string& tag,
+    SessionOptions& sessionOptions)
 {
     // objects to load the graph
     Status status;
-    SessionOptions sessionOptions;
     RunOptions runOptions;
     SavedModelBundle bundle;
-
-    // set the number of threads
-    setThreading(sessionOptions, multiThreaded ? 0 : 1);
 
     // load the model
     status = LoadSavedModel(sessionOptions, runOptions, exportDir, { tag }, &bundle);
     if (!status.ok())
     {
-        throw cms::Exception("InvalidGraph")
-            << "error while loading graph: " << status.ToString();
+        throw cms::Exception("InvalidGraph") << "error while loading graph: " << status.ToString();
     }
 
-    // return a copy
+    // return a copy of the graph
     return new MetaGraphDef(bundle.meta_graph_def);
 }
 
-Session* createSession(bool multiThreaded)
+MetaGraphDef* loadMetaGraph(const std::string& exportDir, const std::string& tag, int nThreads)
+{
+    // create session options and set thread options
+    SessionOptions sessionOptions;
+    setThreading(sessionOptions, nThreads);
+
+    return loadMetaGraph(exportDir, tag, sessionOptions);
+}
+
+Session* createSession(SessionOptions& sessionOptions)
 {
     // objects to create the session
     Status status;
-    SessionOptions sessionOptions;
-
-    // set the number of threads
-    setThreading(sessionOptions, multiThreaded ? 0 : 1);
 
     // create a new, empty session
-    tf::Session* session = nullptr;
-    status = tf::NewSession(sessionOptions, &session);
+    Session* session = nullptr;
+    status = NewSession(sessionOptions, &session);
     if (!status.ok())
     {
         throw cms::Exception("InvalidSession")
@@ -67,9 +81,19 @@ Session* createSession(bool multiThreaded)
     return session;
 }
 
-Session* createSession(MetaGraphDef* metaGraph, const std::string& exportDir, bool multiThreaded)
+Session* createSession(int nThreads)
 {
-    Session* session = createSession(multiThreaded);
+    // create session options and set thread options
+    SessionOptions sessionOptions;
+    setThreading(sessionOptions, nThreads);
+
+    return createSession(sessionOptions);
+}
+
+Session* createSession(MetaGraphDef* metaGraph, const std::string& exportDir,
+    SessionOptions& sessionOptions)
+{
+    Session* session = createSession(sessionOptions);
 
     // add the graph def from the meta graph
     Status status;
@@ -109,6 +133,15 @@ Session* createSession(MetaGraphDef* metaGraph, const std::string& exportDir, bo
     return session;
 }
 
+Session* createSession(MetaGraphDef* metaGraph, const std::string& exportDir, int nThreads)
+{
+    // create session options and set thread options
+    SessionOptions sessionOptions;
+    setThreading(sessionOptions, nThreads);
+
+    return createSession(metaGraph, exportDir, sessionOptions);
+}
+
 bool closeSession(Session*& session)
 {
     if (session == nullptr)
@@ -136,8 +169,7 @@ void run(Session* session, const NamedTensorList& inputs,
     }
 
     // run and check the status
-    Status status;
-    status = session->Run(inputs, outputNames, targetNodes, outputs);
+    Status status = session->Run(inputs, outputNames, targetNodes, outputs);
     if (!status.ok())
     {
         throw cms::Exception("InvalidRun")

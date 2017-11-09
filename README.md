@@ -63,15 +63,15 @@ The tag passed to `add_meta_graph_and_variables` serves as an identifier for you
 
 // load the meta graph, i.e. an object that contains the computational graph
 // as well as some meta information
-tf::MetaGraphDef* metaGraph = tf::loadMetaGraph("/path/to/simplegraph");
+tensorflow::MetaGraphDef* metaGraph = tensorflow::loadMetaGraph("/path/to/simplegraph");
 
 // create a session
 // we need to pass the export directory again so that the session can
 // properly initialize all variables
-tf::Session* session = tf::createSession(metaGraph, "/path/to/simplegraph");
+tensorflow::Session* session = tensorflow::createSession(metaGraph, "/path/to/simplegraph");
 
 // create an input tensor
-tf::Tensor input(tf::DT_FLOAT, { 1, 10 }); // single batch of dimension 10
+tensorflow::Tensor input(tensorflow::DT_FLOAT, { 1, 10 }); // single batch of dimension 10
 
 // example: fill a single batch of the input tensor with consecutive numbers
 // -> [[0, 1, 2, ...]]
@@ -82,8 +82,8 @@ for (size_t i = 0; i < 10; i++) input.matrix<float>()(0, i) = float(i);
 // evaluation
 //
 
-std::vector<tf::Tensor> outputs;
-tf::run(session, { { "input", input } }, { "output" }, &outputs);
+std::vector<tensorflow::Tensor> outputs;
+tensorflow::run(session, { { "input", input } }, { "output" }, &outputs);
 
 
 //
@@ -169,7 +169,7 @@ Any CMSSW 94X version will work (currently only available on integration branche
 source /cvmfs/cms.cern.ch/cmsset_default.sh
 
 export SCRAM_ARCH="slc6_amd64_gcc630"
-export CMSSW_VERSION="CMSSW_9_4_X_2017-10-09-1100"
+export CMSSW_VERSION="CMSSW_9_4_X_2017-11-09-1100"
 
 cmsrel $CMSSW_VERSION
 cd $CMSSW_VERSION/src
@@ -185,14 +185,14 @@ scram b
 
 ##### Multi-threading
 
-If you want TensorFlow to use multiple threads, you can pass `true` as the second argument to `tf::loadMetaGraph`, and as the third argument to `tf::createSession`. By default, only one thread is used.
+If you want TensorFlow to use multiple threads, you can pass `true` as the second argument to `tensorflow::loadMetaGraph`, and as the third argument to `tensorflow::createSession`. By default, only one thread is used.
 
 ```cpp
 // load the graph
-tf::MetaGraphDef* metaGraph = tf::loadMetaGraph("/path/to/simplegraph", true);
+tensorflow::MetaGraphDef* metaGraph = tensorflow::loadMetaGraph("/path/to/simplegraph", true);
 
 // create a session and use multi-threading
-tf::Session* session = tf::createSession(metaGraph, "/path/to/simplegraph", true);
+tensorflow::Session* session = tensorflow::createSession(metaGraph, "/path/to/simplegraph", true);
 
 // proceed as usual
 ...
@@ -201,7 +201,7 @@ tf::Session* session = tf::createSession(metaGraph, "/path/to/simplegraph", true
 
 ##### Logging
 
-By default, TensorFlow logging is quite verbose. This can be changed via setting the `TF_CPP_MIN_LOG_LEVEL` environment varibale before calling (e.g.) `cmsRun`, or via calling `tf::setLogging(level)` in your code. Log levels:
+By default, TensorFlow logging is quite verbose. This can be changed via setting the `TF_CPP_MIN_LOG_LEVEL` environment varibale before calling (e.g.) `cmsRun`, or via calling `tensorflow::setLogging(level)` in your code. Log levels:
 
 | `TF_CPP_MIN_LOG_LEVEL` value | Verbosity level |
 | ---------------------------- | --------------- |
