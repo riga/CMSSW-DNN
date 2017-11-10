@@ -1,5 +1,5 @@
 /*
- * Graph and session loading tests.
+ * Tests for loading meta graphs via the SavedModel interface.
  * Based on TensorFlow C++ API 1.3.
  * For more info, see https://gitlab.cern.ch/mrieger/CMSSW-DNN.
  *
@@ -25,9 +25,9 @@ std::string cmsswPath(std::string path)
     return (boost::filesystem::exists(base.c_str()) ? base : releaseBase) + path;
 }
 
-class testLoading : public CppUnit::TestFixture
+class testMetaGraphLoading : public CppUnit::TestFixture
 {
-    CPPUNIT_TEST_SUITE(testLoading);
+    CPPUNIT_TEST_SUITE(testMetaGraphLoading);
     CPPUNIT_TEST(checkAll);
     CPPUNIT_TEST_SUITE_END();
 
@@ -40,9 +40,9 @@ public:
 
 };
 
-CPPUNIT_TEST_SUITE_REGISTRATION(testLoading);
+CPPUNIT_TEST_SUITE_REGISTRATION(testMetaGraphLoading);
 
-void testLoading::setUp()
+void testMetaGraphLoading::setUp()
 {
     dataPath = cmsswPath("/test/" + std::string(getenv("SCRAM_ARCH"))
         + "/" + boost::filesystem::unique_path().string());
@@ -68,7 +68,7 @@ void testLoading::setUp()
               << result << std::endl;
 }
 
-void testLoading::tearDown()
+void testMetaGraphLoading::tearDown()
 {
     if (boost::filesystem::exists(dataPath))
     {
@@ -76,7 +76,7 @@ void testLoading::tearDown()
     }
 }
 
-void testLoading::checkAll()
+void testMetaGraphLoading::checkAll()
 {
     std::string exportDir = dataPath + "/simplegraph";
 
