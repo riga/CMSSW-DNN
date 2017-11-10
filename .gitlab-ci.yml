@@ -15,7 +15,7 @@ before_script:
   - cp -r $CI_HOME DNN
   - cd $CI_HOME
 
-93X:
+94X:
   stage: test
   tags:
     - cvmfs
