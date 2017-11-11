@@ -3,34 +3,29 @@
 - Main repository & issues: [gitlab.cern.ch/mrieger/CMSSW-DNN](https://gitlab.cern.ch/mrieger/CMSSW-DNN)
 - Code mirror: [github.com/riga/CMSSW-DNN](https://github.com/riga/CMSSW-DNN)
 
-This project provides a simple yet fast interface to [TensorFlow](https://www.tensorflow.org) and lets you evaluate trained models right within CMSSW. It **does not depend** on a converter library or custom NN implementation. By using TensorFlow's C++ API (available via `/cvmfs`), you can essentially load and evaluate every model that was previously saved in both C **or** Python.
+This project provides a simple yet fast interface to [TensorFlow](https://www.tensorflow.org) and lets you evaluate trained models right within CMSSW. It **does not depend** on a converter library or custom NN implementation. By using TensorFlow's C++ API (available via `/cvmfs`), you can essentially load and evaluate every model that was previously saved in both C++ **or** Python.
 
 This interface requires CMSSW 9.4.X or greater. For the C API based version see the [c_api branch](/../tree/c_api). For lower versions see the [80X branch](/../tree/80X).
 
 
-##### Features in a nutshell
-
-- Native supports for arbitrary network architectures.
-- Direct interface to TensorFlow, no intermediate converter library required.
-- Fast data access and in-place operations.
-- Evaluation with multiple input and output tensors (and tensors defined as inputs multiple times).
-- Thread-safety.
-- Batching.
-- **GPU support**.
-
-
 ### Usage
 
-Model saving and loading makes use of TensorFlow's [``SavedModel`` serialization format](https://github.com/tensorflow/tensorflow/blob/master/tensorflow/python/saved_model/README.md).
+TensorFlow provides multiple ways to save a computational graph. Depending on which method is used, the API calls to load a graph in CMSSW vary.
+
+After defining and training a neural network in Python, you typically don't want to continue training within CMSSW. If this is the case, you want to save a [constant graph](#constant-graph). Otherwise, jump to the [`SavedModel` format](#savedmodel-format).
 
 
-##### Save your Model (in Python)
+#### Constant Graphs
+
+A constant graph is saved in a single protobuf file. During the saving process, variables are converted to constant tensors, and ops and tensors that are no longer required (cost function, optimizer, etc.) are removed. The memory consumption during evaluation in CMSSW - especially in multi-threaded mode - can greatly benefit from this conversion.
+
+
+###### Saving
 
 ```python
 import tensorflow as tf
 
 # define your model here
-# example:
 x_ = tf.placeholder(tf.float32, [None, 10], name="input")
 W = tf.Variable(tf.ones([10, 1]))
 b = tf.Variable(tf.ones([1]))
@@ -40,10 +35,88 @@ y = tf.add(tf.matmul(x_, W), b, name="output")
 sess = tf.Session()
 sess.run(tf.global_variables_initializer())
 
-# train your model here
+# training
 ...
 
-# save your model
+# convert and save it
+outputs = ["output"] # names of output operations you want to use later
+constant_graph = tf.graph_util.convert_variables_to_constants(sess, sess.graph.as_graph_def(), outputs)
+tf.train.write_graph(constant_graph, "/path/to", "constantgraph.pb", as_text=False)
+```
+
+###### Loading and Evaluation
+
+```cpp
+#include "DNN/TensorFlow/interface/TensorFlow.h"
+
+//
+// setup
+//
+
+// load the graph definition, i.e. an object that contains the computational graph
+tensorflow::GraphDef* graphDef = tensorflow::loadGraphDef("/path/to/constantgraph.pb");
+
+// create a session
+tensorflow::Session* session = tensorflow::createSession(graphDef);
+
+// create an input tensor
+tensorflow::Tensor input(tensorflow::DT_FLOAT, { 1, 10 }); // single batch of dimension 10
+
+// example: fill a single batch of the input tensor with consecutive numbers
+// -> [[0, 1, 2, ...]]
+for (size_t i = 0; i < 10; i++) input.matrix<float>()(0, i) = float(i);
+
+
+//
+// evaluation
+//
+
+std::vector<tensorflow::Tensor> outputs;
+tensorflow::run(session, { { "input", input } }, { "output" }, &outputs);
+
+
+//
+// process outputs
+//
+
+// print the output
+// -> [[float]]
+std::cout << outputs[0].matrix<float>()(0, 0) << std::endl;
+// -> 46.
+
+// cleanup
+tensorflow::closeSession(session);
+delete graphDef;
+```
+
+For more examples, see [`test/testGraphLoading.cc`](./TensorFlow/test/testGraphLoading.cc).
+
+
+#### `SavedModel` Format
+
+
+TensorFlow's [``SavedModel`` serialization format](https://github.com/tensorflow/tensorflow/blob/master/tensorflow/python/saved_model/README.md) is a more generic
+
+
+###### Saving
+
+```python
+import tensorflow as tf
+
+# define your model here
+x_ = tf.placeholder(tf.float32, [None, 10], name="input")
+W = tf.Variable(tf.ones([10, 1]))
+b = tf.Variable(tf.ones([1]))
+y = tf.add(tf.matmul(x_, W), b, name="output")
+
+# create a session and initialize everything
+sess = tf.Session()
+sess.run(tf.global_variables_initializer())
+
+# training
+...
+
+# save it
 builder = tf.saved_model.builder.SavedModelBuilder("/path/to/simplegraph")
 builder.add_meta_graph_and_variables(sess, [tf.saved_model.tag_constants.SERVING])
 builder.save()
@@ -52,7 +125,7 @@ builder.save()
 The tag passed to `add_meta_graph_and_variables` serves as an identifier for your graph in the saved file which potentially can contain multiple graphs. `tf.saved_model.tag_constants.SERVING` ("serve") is a commonly used tag, but you are free to use any value here.
 
 
-##### Evaluate your Model (in CMSSW)
+###### Loading and Evaluation
 
 ```cpp
 #include "DNN/TensorFlow/interface/TensorFlow.h"
@@ -96,15 +169,14 @@ std::cout << outputs[0].matrix<float>()(0, 0) << std::endl;
 // -> 46.
 
 // cleanup
-session->Close();
-delete session;
-delete metaGraph;
+tensorflow::closeSession(session);
+delete graphDef;
 ```
 
-For more examples, see [`test/testLoading.cc`](./TensorFlow/test/testLoading.cc).
+For more examples, see [`test/testMetaGraphLoading.cc`](./TensorFlow/test/testMetaGraphLoading.cc).
 
 
-##### Note on Keras
+### Note on Keras
 
 As Keras can be backed by TensorFlow, the model saving process is identical:
 
@@ -118,7 +190,12 @@ K.set_session(sess)
 # define and train your keras model here
 ...
 
-# save your model
+# save at as a constant graph
+outputs = [...]
+constant_graph = tf.graph_util.convert_variables_to_constants(sess, sess.graph.as_graph_def(), outputs)
+tf.train.write_graph(constant_graph, "/path/to", "constantgraph.pb", as_text=False)
+
+# save it as a SavedModel
 builder = tf.saved_model.builder.SavedModelBuilder("/path/to/simplegraph")
 builder.add_meta_graph_and_variables(sess, [tf.saved_model.tag_constants.SERVING])
 builder.save()
@@ -185,14 +262,30 @@ scram b
 
 ##### Multi-threading
 
-If you want TensorFlow to use multiple threads, you can pass `true` as the second argument to `tensorflow::loadMetaGraph`, and as the third argument to `tensorflow::createSession`. By default, only one thread is used.
+You can set the number of treads when loading a `GraphDef`, `MetaGraphDef`, and `Session`. By default, only one thread is used.
+
+When loading a constant graph:
 
 ```cpp
 // load the graph
-tensorflow::MetaGraphDef* metaGraph = tensorflow::loadMetaGraph("/path/to/simplegraph", true);
+tensorflow::GraphDef* graphDef = tensorflow::loadGraphDef("/path/to/constantgraph.pb");
 
 // create a session and use multi-threading
-tensorflow::Session* session = tensorflow::createSession(metaGraph, "/path/to/simplegraph", true);
+tensorflow::Session* session = tensorflow::createSession(graphDef, 4);
+
+// proceed as usual
+...
+```
+
+
+When loading a saved model:
+
+```cpp
+// load the meta graph
+tensorflow::MetaGraphDef* metaGraph = tensorflow::loadMetaGraph("/path/to/simplegraph", 4);
+
+// create a session and use multi-threading
+tensorflow::Session* session = tensorflow::createSession(metaGraph, "/path/to/simplegraph", 4);
 
 // proceed as usual
 ...
@@ -211,4 +304,4 @@ By default, TensorFlow logging is quite verbose. This can be changed via setting
 | "3"                          | error           |
 | "4"                          | none            |
 
-Forwarding to the `MessageLogger` service is not yet possible.
+Forwarding to the `MessageLogger` service is not possible yet.
