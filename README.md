@@ -240,13 +240,13 @@ run 1000 evaluations for batch size 1000
 
 ### Installation
 
-Any CMSSW 94X version will work (currently only available on integration branches):
+Any CMSSW 94X version will work:
 
 ```bash
 source /cvmfs/cms.cern.ch/cmsset_default.sh
 
 export SCRAM_ARCH="slc6_amd64_gcc630"
-export CMSSW_VERSION="CMSSW_9_4_X_2017-11-09-1100"
+export CMSSW_VERSION="CMSSW_9_4_0"
 
 cmsrel $CMSSW_VERSION
 cd $CMSSW_VERSION/src
