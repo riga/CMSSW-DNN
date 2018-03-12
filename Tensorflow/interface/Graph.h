@@ -62,6 +62,7 @@ private:
 
     PyObject* pyInputs;
     PyObject* pyOutputs;
+    bool loaded;
 };
 
 static std::string embeddedTensorflowScript = "\

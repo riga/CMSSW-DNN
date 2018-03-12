@@ -18,7 +18,7 @@ Graph::Graph()
     , python()
     , pyInputs(0)
     , pyOutputs(0)
-    , pyEvalSession(0)
+    , loaded(false)
 {
     init("");
 }
@@ -28,7 +28,7 @@ Graph::Graph(const std::string& filename)
     , python()
     , pyInputs(0)
     , pyOutputs(0)
-    , pyEvalSession(0)
+    , loaded(false)
 {
     init(filename);
 }
@@ -38,7 +38,7 @@ Graph::Graph(LogLevel logLevel)
     , python(PythonInterface(logLevel))
     , pyInputs(0)
     , pyOutputs(0)
-    , pyEvalSession(0)
+    , loaded(false)
 {
     init("");
 }
@@ -48,7 +48,7 @@ Graph::Graph(const std::string& filename, LogLevel logLevel)
     , python(PythonInterface(logLevel))
     , pyInputs(0)
     , pyOutputs(0)
-    , pyEvalSession(0)
+    , loaded(false)
 {
     init(filename);
 }
@@ -58,6 +58,8 @@ Graph::~Graph()
     // cleanup python objects
     python.release(pyInputs);
     python.release(pyOutputs);
+
+    loaded = false;
 }
 
 void Graph::init(const std::string& filename)
@@ -157,14 +159,14 @@ void Graph::load(const std::string& filename)
     result = python.call("load_graph", filename);
     python.release(result);
 
-    pyEvalSession = python.get("eval_session");
+    loaded = true;
 }
 
 void Graph::eval()
 {
     logger.debug("evaluate");
 
-    if (!pyEvalSession)
+    if (!loaded)
     {
         throw std::runtime_error("cannot eval session, graph not loaded yet");
     }
@@ -193,7 +195,7 @@ void Graph::eval()
     PyTuple_SetItem(pyEvalArgs, 0, pyInputs);
     Py_INCREF(pyOutputs);
     PyTuple_SetItem(pyEvalArgs, 1, pyOutputs);
-    python.call(pyEvalSession, pyEvalArgs);
+    python.call("eval_session", pyEvalArgs);
     Py_DECREF(pyEvalArgs);
 
     // update arrays of output tensors
