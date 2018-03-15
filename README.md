@@ -7,7 +7,7 @@ This project provides a simple yet fast interface to [TensorFlow](https://www.te
 
 This interface requires CMSSW 9.4.X or greater and TensorFlow 1.5 (currently works only in latest IBs). There are other versions of this interface, depending on which TensorFlow version/API is available:
 
-- TF C++ API v1.6: [tf_cc_1.6 branch](/../tree/tf_cc_1.6)
+- TF C++ API v1.6: [tf_cc_1.6 branch](/../tree/tf_cc_1.6) (current version in `slc6_amd64_gcc630`)
 - TF C++ API v1.3: [tf_cc_1.3 branch](/../tree/tf_cc_1.3) (current version in `slc6_amd64_gcc630`)
 - TF C API : [c_api branch](/../tree/c_api)
 - TF python bundle + Python C API: [80X branch](/../tree/80X)
