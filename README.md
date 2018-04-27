@@ -7,7 +7,7 @@
 
 ### Note
 
-The interface was merged under [PhysicsTools/TensorFlow](https://github.com/cms-sw/cmssw/tree/master/PhysicsTools/TensorFlow) on Jan 25 2018 into [CMSSW\_10\_1\_X](https://github.com/cms-sw/cmssw/pull/19893) and backported to [CMSSW\_9\_4\_X](https://github.com/cms-sw/cmssw/pull/22042) on Feb 15 2018.
+The interface was merged under [PhysicsTools/TensorFlow](https://github.com/cms-sw/cmssw/tree/master/PhysicsTools/TensorFlow) on Jan 25 2018 into [CMSSW\_10\_1\_X](https://github.com/cms-sw/cmssw/pull/19893) and backported to [CMSSW\_9\_4\_X](https://github.com/cms-sw/cmssw/pull/22042) on Feb 15 2018. For development purposes, the include paths in this repository point to `DNN/TensorFlow`.
 
 ---
 
@@ -19,18 +19,14 @@ Due to the development of the CMS software environment since 8\_0\_X, there are 
 | ------------- | ------------------- | ---------------------------- | ----------------------------------------------------------------- |
 | t.b.a.        | slc6\_amd64\_gcc630 | C++, 1.6.0                   | [tf\_cc\_1.6](/../tree/tf_cc_1.6)                                 |
 | 10\_1\_X      | slc6\_amd64\_gcc630 | C++, 1.5.0                   | [tf\_cc\_1.5](/../tree/tf_cc_1.5)                                 |
-| 10\_0\_X      | slc6\_amd64\_gcc630 | C++, 1.3.0                   | [tf\_cc\_1.3](/../tree/tf_cc_1.3) / **[master](/../tree/master)** |
 | 9\_4\_X       | slc6\_amd64\_gcc630 | C++, 1.3.0                   | [tf\_cc\_1.3](/../tree/tf_cc_1.3) / **[master](/../tree/master)** |
 | 9\_3\_X       | slc6\_amd64\_gcc630 | C, 1.1.0                     | [tf\_c](/../tree/tf_c)                                            |
 | 8\_0\_X       | slc6\_amd64\_gcc530 | Py + CPython, 1.1.0          | [tf\_py\_cpython](/../tree/tf_py_cpython)                         |
 
 
-### Examples
-
-- [`TensorFlowExamples/GraphLoading`](./TensorFlowExamples/GraphLoading): Graph loading and evaluation in a CMSSW plugin.
-
-
 ### Usage
+
+You can find examples that show how to use the interface at [mrieger/CMSSW-TensorFlowExamples](https://gitlab.cern.ch/mrieger/CMSSW-TensorFlowExamples).
 
 TensorFlow provides multiple ways to save a computational graph. Depending on which method is used, the API calls to load a graph in CMSSW vary.
 
@@ -112,7 +108,7 @@ tensorflow::closeSession(session);
 delete graphDef;
 ```
 
-For more examples, see [`TensorFlow/test/testGraphLoading.cc`](./TensorFlow/test/testGraphLoading.cc) or a complete CMSSW example plugin at [`TensorFlowExamples/GraphLoading`](./TensorFlowExamples/GraphLoading).
+For more examples, see [`TensorFlow/test/testGraphLoading.cc`](./TensorFlow/test/testGraphLoading.cc).
 
 
 #### `SavedModel` Format
