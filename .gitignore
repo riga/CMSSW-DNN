@@ -10,6 +10,7 @@
 *.tgz
 *.gz
 *.so
+*.pb
 .nfs*
 tmp
 build

@@ -15,6 +15,20 @@ before_script:
   - cp -r $CI_HOME DNN
   - cd $CI_HOME
 
+94X:
+  stage: test
+  tags:
+    - cvmfs
+    - docker
+  variables:
+    SCRAM_ARCH: slc6_amd64_gcc630
+    CMSSW_VERSION: CMSSW_9_4_6_patch1
+  script:
+    - cd $CMSSW_BASE/src
+    - 2>&1 scram b runtests | tee log.txt
+    - if [ "$?" != "0" ]; then exit "$?"; fi
+    - if [ ! -z "$( cat log.txt | grep "had ERRORS" )" ]; then exit "1"; fi
+
 101X:
   stage: test
   tags:
@@ -22,7 +36,7 @@ before_script:
     - docker
   variables:
     SCRAM_ARCH: slc6_amd64_gcc630
-    CMSSW_VERSION: CMSSW_10_1_X_2018-03-14-2300
+    CMSSW_VERSION: CMSSW_10_1_2
   script:
     - cd $CMSSW_BASE/src
     - 2>&1 scram b runtests | tee log.txt
