@@ -15,14 +15,14 @@ before_script:
   - cp -r $CI_HOME DNN
   - cd $CI_HOME
 
-94X:
+test:
   stage: test
   tags:
     - cvmfs
     - docker
   variables:
     SCRAM_ARCH: slc6_amd64_gcc630
-    CMSSW_VERSION: CMSSW_9_4_0
+    CMSSW_VERSION: CMSSW_9_4_6_patch1
   script:
     - cd $CMSSW_BASE/src
     - 2>&1 scram b runtests | tee log.txt
