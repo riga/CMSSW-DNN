@@ -31,8 +31,8 @@ Changes:
   - Renamed include guard to reflect location within CMSSW
 */
 
-#ifndef PHYSICSTOOLS_TENSORFLOW_NTSESSION_H
-#define PHYSICSTOOLS_TENSORFLOW_NTSESSION_H
+#ifndef DNN_TENSORFLOW_NTSESSION_H
+#define DNN_TENSORFLOW_NTSESSION_H
 
 #include <atomic>
 #include <memory>
@@ -357,4 +357,4 @@ class NTSession : public Session {
 
 }  // end namespace tensorflow
 
-#endif  // PHYSICSTOOLS_TENSORFLOW_NTSESSION_H
+#endif  // DNN_TENSORFLOW_NTSESSION_H

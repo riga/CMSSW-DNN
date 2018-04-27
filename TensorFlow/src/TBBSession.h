@@ -33,8 +33,8 @@ Changes:
   - Renamed include guard to reflect location within CMSSW
 */
 
-#ifndef PHYSICSTOOLS_TENSORFLOW_TBBSESSION_H
-#define PHYSICSTOOLS_TENSORFLOW_TBBSESSION_H
+#ifndef DNN_TENSORFLOW_TBBSESSION_H
+#define DNN_TENSORFLOW_TBBSESSION_H
 
 #include <atomic>
 #include <memory>
@@ -337,4 +337,4 @@ class TBBSession : public Session {
 
 }  // end namespace tensorflow
 
-#endif  // PHYSICSTOOLS_TENSORFLOW_TBBSESSION_H
+#endif  // DNN_TENSORFLOW_TBBSESSION_H
