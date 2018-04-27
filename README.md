@@ -13,12 +13,16 @@ The interface was merged under [PhysicsTools/TensorFlow](https://github.com/cms-
 
 This interface provides simple and fast access to [TensorFlow](https://www.tensorflow.org) in CMSSW and lets you evaluate trained models right within your C++ modules. It **does not depend** on a converter library or custom NN implementation. In fact, it is a thin layer on top of TensorFlow's C++ API (available via exernals in `/cvmfs`) which handles session / graph loading & cleanup, exceptions, and thread management within CMSSW. As a result, you can load and evaluate every model that was previously trained and saved in Python (or C++).
 
-This interface requires CMSSW 9.4.X (`slc6_amd64_gcc630`) or greater and TensorFlow 1.6 (current version in `/cvmfs`). There are other versions of this interface, depending on which TensorFlow version/API is available:
+Due to the development of the CMS software environment since 8\_0\_X, there are multiple versions of this interface. But since the C++ API was added in 9\_4\_X, the interface API is stable and should handle all changes within TensorFlow internally. The following table summarizes all available versions, mapped to CMSSW version and SCRAM\_ARCH:
 
-- TF C++ API v1.5: [tf\_cc\_1.5 branch](/../tree/tf_cc_1.5)
-- TF C++ API v1.3: [tf\_cc\_1.3 branch](/../tree/tf_cc_1.3)
-- TF C API: [tf\_c branch](/../tree/tf_c)
-- TF python bundle + Python C API: [tf\_py\_cpython branch](/../tree/tf_py_cpython)
+| CMSSW version |     SCRAM\_ARCH     | TF API & version (externals) |                          Interface branch                         |
+| ------------- | ------------------- | ---------------------------- | ----------------------------------------------------------------- |
+| t.b.a.        | slc6\_amd64\_gcc630 | C++, 1.6.0                   | [tf\_cc\_1.6](/../tree/tf_cc_1.6)                                 |
+| 10\_1\_X      | slc6\_amd64\_gcc630 | C++, 1.5.0                   | [tf\_cc\_1.5](/../tree/tf_cc_1.5)                                 |
+| 10\_0\_X      | slc6\_amd64\_gcc630 | C++, 1.3.0                   | [tf\_cc\_1.3](/../tree/tf_cc_1.3) / **[master](/../tree/master)** |
+| 9\_4\_X       | slc6\_amd64\_gcc630 | C++, 1.3.0                   | [tf\_cc\_1.3](/../tree/tf_cc_1.3) / **[master](/../tree/master)** |
+| 9\_3\_X       | slc6\_amd64\_gcc630 | C, 1.1.0                     | [tf\_c](/../tree/tf_c)                                            |
+| 8\_0\_X       | slc6\_amd64\_gcc530 | Py + CPython, 1.1.0          | [tf\_py\_cpython](/../tree/tf_py_cpython)                         |
 
 
 ### Examples
