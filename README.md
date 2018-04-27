@@ -1,28 +1,27 @@
-## DNN / Tensorflow Interface for CMSSW&nbsp;&nbsp;&nbsp;&nbsp;[![build status](https://gitlab.cern.ch/mrieger/CMSSW-DNN/badges/80X/build.svg)](https://gitlab.cern.ch/mrieger/CMSSW-DNN/pipelines)
+## TensorFlow Interface for CMSSW
+
+[![build status](https://gitlab.cern.ch/mrieger/CMSSW-DNN/badges/tf_py_cpython/build.svg)](https://gitlab.cern.ch/mrieger/CMSSW-DNN/pipelines)
 
 - Main repository & issues: [gitlab.cern.ch/mrieger/CMSSW-DNN](https://gitlab.cern.ch/mrieger/CMSSW-DNN)
 - Code mirror: [github.com/riga/CMSSW-DNN](https://github.com/riga/CMSSW-DNN)
 
-This project provides a simple yet fast interface to [Tensorflow](https://www.tensorflow.org) graphs and tensors which lets you evaluate trained models right within CMSSW. It **does not depend** on a converter library or custom NN implementation. By using the C-API's of both Python and NumPy (available via `/cvmfs`), you can essentially load and evaluate every model that was previously saved via [`tf.train.Saver.save()`](https://www.tensorflow.org/api_docs/python/tf/train/Saver#save).
+### Note
 
-This interface requires a pre-compiled Tensorflow bundle which is available starting from CMSSW 9.3.X. The bundle for CMSSW 8.0.X is provided by [M. Harrendorf](https://github.com/mharrend).
+The interface was merged under [PhysicsTools/TensorFlow](https://github.com/cms-sw/cmssw/tree/master/PhysicsTools/TensorFlow) on Jan 25 2018 into [CMSSW\_10\_1\_X](https://github.com/cms-sw/cmssw/pull/19893) and backported to [CMSSW\_9\_4\_X](https://github.com/cms-sw/cmssw/pull/22042) on Feb 15 2018. For development purposes, the include paths in this repository point to `DNN/TensorFlow`.
 
-**Since CMSSW 9.3.X there is an interface that is solely based in the Tensorflow C API. For more info, see the [master branch](../..)**.
+---
 
+This interface provides simple and fast access to [TensorFlow](https://www.tensorflow.org) in CMSSW and lets you evaluate trained models right within your C++ modules. It **does not depend** on a converter library or custom NN implementation. In fact, it is a thin layer on top of TensorFlow's C++ API (available via exernals in `/cvmfs`) which handles session / graph loading & cleanup, exceptions, and thread management within CMSSW. As a result, you can load and evaluate every model that was previously trained and saved in Python (or C++).
 
-##### Features in a nutshell
+Due to the development of the CMS software environment since 8\_0\_X, there are multiple versions of this interface. But since the C++ API was added in 9\_4\_X, the interface API is stable and should handle all changes within TensorFlow internally. The following table summarizes all available versions, mapped to CMSSW version and SCRAM\_ARCH:
 
-- Supports arbitrary network architectures natively.
-- Direct interface to Tensorflow / NumPy objects, no intermediate converter library required.
-- Fast data access via Numpy arrays and in-place operations.
-- Evaluation with multiple input and output tensors.
-- Batching.
-- **GPU support**.
-
-
-##### Tensorflow C++ API
-
-Tensorflow also provides a C++ API which could replace the Python/NumPy C API approch described above. However, it is not yet available in CMSSW ([discussion](https://github.com/cms-sw/cmsdist/issues/2994)). The plan is to transition to a pure Tensorflow backend once it becomes available while the (higher-level) API of *this tool* remains the same.
+| CMSSW version |     SCRAM\_ARCH     | TF API & version (externals) |                          Interface branch                         |
+| ------------- | ------------------- | ---------------------------- | ----------------------------------------------------------------- |
+| t.b.a.        | slc6\_amd64\_gcc630 | C++, 1.6.0                   | [tf\_cc\_1.6](/../tree/tf_cc_1.6)                                 |
+| 10\_1\_X      | slc6\_amd64\_gcc630 | C++, 1.5.0                   | [tf\_cc\_1.5](/../tree/tf_cc_1.5)                                 |
+| 9\_4\_X       | slc6\_amd64\_gcc630 | C++, 1.3.0                   | [tf\_cc\_1.3](/../tree/tf_cc_1.3) / **[master](/../tree/master)** |
+| 9\_3\_X       | slc6\_amd64\_gcc630 | C, 1.1.0                     | [tf\_c](/../tree/tf_c)                                            |
+| 8\_0\_X       | slc6\_amd64\_gcc530 | Py + CPython, 1.1.0          | [tf\_py\_cpython](/../tree/tf_py_cpython)                         |
 
 
 ### Usage
