@@ -1,22 +1,27 @@
-## DNN / TensorFlow Interface for CMSSW&nbsp;&nbsp;&nbsp;&nbsp;[![build status](https://gitlab.cern.ch/mrieger/CMSSW-DNN/badges/master/build.svg)](https://gitlab.cern.ch/mrieger/CMSSW-DNN/pipelines)
+## TensorFlow Interface for CMSSW
+
+[![build status](https://gitlab.cern.ch/mrieger/CMSSW-DNN/badges/tf_c/build.svg)](https://gitlab.cern.ch/mrieger/CMSSW-DNN/pipelines)
 
 - Main repository & issues: [gitlab.cern.ch/mrieger/CMSSW-DNN](https://gitlab.cern.ch/mrieger/CMSSW-DNN)
 - Code mirror: [github.com/riga/CMSSW-DNN](https://github.com/riga/CMSSW-DNN)
 
-This project provides a simple yet fast interface to [TensorFlow](https://www.tensorflow.org) and lets you evaluate trained models right within CMSSW. It **does not depend** on a converter library or custom NN implementation. By using TensorFlow's C API (available via `/cvmfs`), you can essentially load and evaluate every model that was previously saved in both C **or** Python.
+### Note
 
-This interface requires CMSSW 9.3.X or greater. For lower versions see the [80X branch](/../tree/80X).
+The interface was merged under [PhysicsTools/TensorFlow](https://github.com/cms-sw/cmssw/tree/master/PhysicsTools/TensorFlow) on Jan 25 2018 into [CMSSW\_10\_1\_X](https://github.com/cms-sw/cmssw/pull/19893) and backported to [CMSSW\_9\_4\_X](https://github.com/cms-sw/cmssw/pull/22042) on Feb 15 2018. For development purposes, the include paths in this repository point to `DNN/TensorFlow`.
 
+---
 
-##### Features in a nutshell
+This interface provides simple and fast access to [TensorFlow](https://www.tensorflow.org) in CMSSW and lets you evaluate trained models right within your C++ modules. It **does not depend** on a converter library or custom NN implementation. In fact, it is a thin layer on top of TensorFlow's C++ API (available via exernals in `/cvmfs`) which handles session / graph loading & cleanup, exceptions, and thread management within CMSSW. As a result, you can load and evaluate every model that was previously trained and saved in Python (or C++).
 
-- Native supports for arbitrary network architectures.
-- Direct interface to TensorFlow, no intermediate converter library required.
-- Fast data access and in-place operations.
-- Evaluation with multiple input and output tensors (and tensors defined as inputs multiple times).
-- Thread-safety.
-- Batching.
-- **GPU support**.
+Due to the development of the CMS software environment since 8\_0\_X, there are multiple versions of this interface. But since the C++ API was added in 9\_4\_X, the interface API is stable and should handle all changes within TensorFlow internally. The following table summarizes all available versions, mapped to CMSSW version and SCRAM\_ARCH:
+
+| CMSSW version |     SCRAM\_ARCH     | TF API & version (externals) |                          Interface branch                         |
+| ------------- | ------------------- | ---------------------------- | ----------------------------------------------------------------- |
+| t.b.a.        | slc6\_amd64\_gcc630 | C++, 1.6.0                   | [tf\_cc\_1.6](/../tree/tf_cc_1.6)                                 |
+| 10\_1\_X      | slc6\_amd64\_gcc630 | C++, 1.5.0                   | [tf\_cc\_1.5](/../tree/tf_cc_1.5)                                 |
+| 9\_4\_X       | slc6\_amd64\_gcc630 | C++, 1.3.0                   | [tf\_cc\_1.3](/../tree/tf_cc_1.3) / **[master](/../tree/master)** |
+| 9\_3\_X       | slc6\_amd64\_gcc630 | C, 1.1.0                     | [tf\_c](/../tree/tf_c)                                            |
+| 8\_0\_X       | slc6\_amd64\_gcc530 | Py + CPython, 1.1.0          | [tf\_py\_cpython](/../tree/tf_py_cpython)                         |
 
 
 ### Usage
