@@ -1,16 +1,24 @@
-## DNN / TensorFlow Interface for CMSSW&nbsp;&nbsp;&nbsp;&nbsp;[![build status](https://gitlab.cern.ch/mrieger/CMSSW-DNN/badges/master/build.svg)](https://gitlab.cern.ch/mrieger/CMSSW-DNN/pipelines)
+## TensorFlow Interface for CMSSW
+
+[![build status](https://gitlab.cern.ch/mrieger/CMSSW-DNN/badges/master/build.svg)](https://gitlab.cern.ch/mrieger/CMSSW-DNN/pipelines)
 
 - Main repository & issues: [gitlab.cern.ch/mrieger/CMSSW-DNN](https://gitlab.cern.ch/mrieger/CMSSW-DNN)
 - Code mirror: [github.com/riga/CMSSW-DNN](https://github.com/riga/CMSSW-DNN)
 
-This project provides a simple yet fast interface to [TensorFlow](https://www.tensorflow.org) and lets you evaluate trained models right within CMSSW. It **does not depend** on a converter library or custom NN implementation. By using TensorFlow's C++ API (available via `/cvmfs`), you can essentially load and evaluate every model that was previously saved in both C++ **or** Python.
+### Note
 
-This interface requires CMSSW 9.4.X or greater and TensorFlow 1.3 (current version in `slc6_amd64_gcc630`). There are other versions of this interface, depending on which TensorFlow version/API is available:
+The interface was merged under [PhysicsTools/TensorFlow](https://github.com/cms-sw/cmssw/tree/master/PhysicsTools/TensorFlow) on Jan 25 2018 into [CMSSW\_10\_1\_X](https://github.com/cms-sw/cmssw/pull/19893) and backported to [CMSSW\_9\_4\_X](https://github.com/cms-sw/cmssw/pull/22042) on Feb 15 2018.
 
-- TF C++ API v1.6: [tf_cc_1.6 branch](/../tree/tf_cc_1.6) (currently works only in latest IBs)
-- TF C++ API v1.5: [tf_cc_1.5 branch](/../tree/tf_cc_1.5) (currently works only in latest IBs)
-- TF C API : [c_api branch](/../tree/c_api)
-- TF python bundle + Python C API: [80X branch](/../tree/80X)
+---
+
+This interface provides simple and fast access to [TensorFlow](https://www.tensorflow.org) in CMSSW and lets you evaluate trained models right within your C++ modules. It **does not depend** on a converter library or custom NN implementation. In fact, it is a thin layer on top of TensorFlow's C++ API (available via `/cvmfs`) which handles session / graph loading & cleanup, exceptions, and thread management within CMSSW. As a result, you can load and evaluate every model that was previously trained and saved in Python (or C++).
+
+This interface requires CMSSW 9.4.X (`slc6_amd64_gcc630`) or greater and TensorFlow 1.6 (current version in `/cvmfs`). There are other versions of this interface, depending on which TensorFlow version/API is available:
+
+- TF C++ API v1.5: [tf\_cc\_1.5 branch](/../tree/tf_cc_1.5)
+- TF C++ API v1.3: [tf\_cc\_1.3 branch](/../tree/tf_cc_1.3)
+- TF C API: [tf\_c branch](/../tree/tf_c)
+- TF python bundle + Python C API: [tf\_py\_cpython branch](/../tree/tf_py_cpython)
 
 
 ### Usage
