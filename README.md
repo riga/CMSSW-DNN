@@ -1,19 +1,32 @@
-## DNN / TensorFlow Interface for CMSSW&nbsp;&nbsp;&nbsp;&nbsp;[![build status](https://gitlab.cern.ch/mrieger/CMSSW-DNN/badges/master/build.svg)](https://gitlab.cern.ch/mrieger/CMSSW-DNN/pipelines)
+## TensorFlow Interface for CMSSW
+
+[![build status](https://gitlab.cern.ch/mrieger/CMSSW-DNN/badges/master/build.svg)](https://gitlab.cern.ch/mrieger/CMSSW-DNN/pipelines)
 
 - Main repository & issues: [gitlab.cern.ch/mrieger/CMSSW-DNN](https://gitlab.cern.ch/mrieger/CMSSW-DNN)
 - Code mirror: [github.com/riga/CMSSW-DNN](https://github.com/riga/CMSSW-DNN)
 
-This project provides a simple yet fast interface to [TensorFlow](https://www.tensorflow.org) and lets you evaluate trained models right within CMSSW. It **does not depend** on a converter library or custom NN implementation. By using TensorFlow's C++ API (available via `/cvmfs`), you can essentially load and evaluate every model that was previously saved in both C++ **or** Python.
+### Note
 
-This interface requires CMSSW 9.4.X or greater and TensorFlow 1.5 (currently works only in latest IBs). There are other versions of this interface, depending on which TensorFlow version/API is available:
+The interface was merged under [PhysicsTools/TensorFlow](https://github.com/cms-sw/cmssw/tree/master/PhysicsTools/TensorFlow) on Jan 25 2018 into [CMSSW\_10\_1\_X](https://github.com/cms-sw/cmssw/pull/19893) and backported to [CMSSW\_9\_4\_X](https://github.com/cms-sw/cmssw/pull/22042) on Feb 15 2018. For development purposes, the include paths in this repository point to `DNN/TensorFlow`.
 
-- TF C++ API v1.6: [tf_cc_1.6 branch](/../tree/tf_cc_1.6) (current version in `slc6_amd64_gcc630`)
-- TF C++ API v1.3: [tf_cc_1.3 branch](/../tree/tf_cc_1.3) (current version in `slc6_amd64_gcc630`)
-- TF C API : [c_api branch](/../tree/c_api)
-- TF python bundle + Python C API: [80X branch](/../tree/80X)
+---
+
+This interface provides simple and fast access to [TensorFlow](https://www.tensorflow.org) in CMSSW and lets you evaluate trained models right within your C++ modules. It **does not depend** on a converter library or custom NN implementation. In fact, it is a thin layer on top of TensorFlow's C++ API (available via exernals in `/cvmfs`) which handles session / graph loading & cleanup, exceptions, and thread management within CMSSW. As a result, you can load and evaluate every model that was previously trained and saved in Python (or C++).
+
+Due to the development of the CMS software environment since 8\_0\_X, there are multiple versions of this interface. But since the C++ API was added in 9\_4\_X, the interface API is stable and should handle all changes within TensorFlow internally. The following table summarizes all available versions, mapped to CMSSW version and SCRAM\_ARCH:
+
+| CMSSW version |     SCRAM\_ARCH     | TF API & version (externals) |                          Interface branch                         |
+| ------------- | ------------------- | ---------------------------- | ----------------------------------------------------------------- |
+| t.b.a.        | slc6\_amd64\_gcc630 | C++, 1.6.0                   | [tf\_cc\_1.6](/../tree/tf_cc_1.6)                                 |
+| 10\_1\_X      | slc6\_amd64\_gcc630 | C++, 1.5.0                   | [tf\_cc\_1.5](/../tree/tf_cc_1.5)                                 |
+| 9\_4\_X       | slc6\_amd64\_gcc630 | C++, 1.3.0                   | [tf\_cc\_1.3](/../tree/tf_cc_1.3) / **[master](/../tree/master)** |
+| 9\_3\_X       | slc6\_amd64\_gcc630 | C, 1.1.0                     | [tf\_c](/../tree/tf_c)                                            |
+| 8\_0\_X       | slc6\_amd64\_gcc530 | Py + CPython, 1.1.0          | [tf\_py\_cpython](/../tree/tf_py_cpython)                         |
 
 
 ### Usage
+
+You can find examples that show how to use the interface at [mrieger/CMSSW-TensorFlowExamples](https://gitlab.cern.ch/mrieger/CMSSW-TensorFlowExamples).
 
 TensorFlow provides multiple ways to save a computational graph. Depending on which method is used, the API calls to load a graph in CMSSW vary.
 
@@ -45,7 +58,8 @@ sess.run(tf.global_variables_initializer())
 
 # convert and save it
 outputs = ["output"] # names of output operations you want to use later
-constant_graph = tf.graph_util.convert_variables_to_constants(sess, sess.graph.as_graph_def(), outputs)
+constant_graph = tf.graph_util.convert_variables_to_constants(
+    sess, sess.graph.as_graph_def(), outputs)
 tf.train.write_graph(constant_graph, "/path/to", "constantgraph.pb", as_text=False)
 ```
 
@@ -94,7 +108,7 @@ tensorflow::closeSession(session);
 delete graphDef;
 ```
 
-For more examples, see [`test/testGraphLoading.cc`](./TensorFlow/test/testGraphLoading.cc).
+For more examples, see [`TensorFlow/test/testGraphLoading.cc`](./TensorFlow/test/testGraphLoading.cc).
 
 
 #### `SavedModel` Format
@@ -181,7 +195,29 @@ delete graphDef;
 For more examples, see [`test/testMetaGraphLoading.cc`](./TensorFlow/test/testMetaGraphLoading.cc).
 
 
-### Note on Keras
+### Installation
+
+Any CMSSW version starting from 9.4.X will work:
+
+```bash
+source /cvmfs/cms.cern.ch/cmsset_default.sh
+
+export SCRAM_ARCH="slc6_amd64_gcc630"
+export CMSSW_VERSION="CMSSW_9_4_6_patch1"
+
+cmsrel "$CMSSW_VERSION"
+cd "$CMSSW_VERSION/src"
+cmsenv
+
+git clone https://gitlab.cern.ch/mrieger/CMSSW-DNN.git DNN
+
+scram b
+```
+
+
+### Important Notes
+
+#### Keras
 
 As Keras can be backed by TensorFlow, the model saving process is identical:
 
@@ -197,7 +233,8 @@ K.set_session(sess)
 
 # save at as a constant graph
 outputs = [...]
-constant_graph = tf.graph_util.convert_variables_to_constants(sess, sess.graph.as_graph_def(), outputs)
+constant_graph = tf.graph_util.convert_variables_to_constants(
+    sess, sess.graph.as_graph_def(), outputs)
 tf.train.write_graph(constant_graph, "/path/to", "constantgraph.pb", as_text=False)
 
 # save it as a SavedModel
@@ -206,68 +243,33 @@ builder.add_meta_graph_and_variables(sess, [tf.saved_model.tag_constants.SERVING
 builder.save()
 ```
 
+#### `BuildFile.xml`'s
 
-### Performance
+If you are aiming to use the TensorFlow interface in your personal CMSSW plugin (!), make sure to include the following lines in your `/plugins/BuildFile.xml`:
 
-A performance test (CPU only for now) is located at [`test/testPerformance.cc`](./TensorFlow/test/testPerformance.cc) and runs 1k evaluations of a feed-forward network with 100 input features, 5 hidden elu layers with 200 nodes each, a softmax output with 10 nodes, and multiple batch sizes. Of course, the actual performance is hardware dependent.
-
+```xml
+<use name="PhysicsTools/TensorFlow" />
 ```
-single-threaded performance:
 
-run 1000 evaluations for batch size 1
--> 0.118 ms per batch
+If you are using the interface in a file in the `/src/` or `/interface/` directory of your module, make sure to create a (global) `/BuildFile.xml` containing (at least):
 
-run 1000 evaluations for batch size 10
--> 0.607 ms per batch
+```xml
+<use name="PhysicsTools/TensorFlow" />
 
-run 1000 evaluations for batch size 100
--> 3.83 ms per batch
-
-run 1000 evaluations for batch size 1000
--> 36.687 ms per batch
-
---------------------------------------------
-multi-threaded performance:
-
-run 1000 evaluations for batch size 1
--> 0.134 ms per batch
-
-run 1000 evaluations for batch size 10
--> 0.440 ms per batch
-
-run 1000 evaluations for batch size 100
--> 1.860 ms per batch
-
-run 1000 evaluations for batch size 1000
--> 8.065 ms per batch
+<export>
+    <lib name="1" />
+</export>
 ```
 
 
-### Installation
+#### TensorFlow in `cmsRun` config files
 
-Any CMSSW 94X version will work:
-
-```bash
-source /cvmfs/cms.cern.ch/cmsset_default.sh
-
-export SCRAM_ARCH="slc6_amd64_gcc630"
-export CMSSW_VERSION="CMSSW_9_4_0"
-
-cmsrel $CMSSW_VERSION
-cd $CMSSW_VERSION/src
-cmsenv
-
-git clone https://gitlab.cern.ch/mrieger/CMSSW-DNN.git DNN
-
-scram b
-```
+Please make sure you do not import the TensorFlow python module in a CMSSW Python configuration files. TensorFlow will crash when it is loaded again within C++ code. Currently, there is no way to shutdown the TensorFlow environment within Python.
 
 
-### Important Notes
+#### Multi-threading
 
-##### Multi-threading
-
-You can set the number of treads when loading a `GraphDef`, `MetaGraphDef`, and `Session`. By default, only one thread is used.
+You can set the number of threads when loading a `GraphDef`, `MetaGraphDef`, and `Session`. By default, only one thread is used but it's easy to use more.
 
 When loading a constant graph:
 
@@ -275,7 +277,7 @@ When loading a constant graph:
 // load the graph
 tensorflow::GraphDef* graphDef = tensorflow::loadGraphDef("/path/to/constantgraph.pb");
 
-// create a session and use multi-threading
+// create a session and use 4 threads
 tensorflow::Session* session = tensorflow::createSession(graphDef, 4);
 
 // proceed as usual
@@ -289,7 +291,7 @@ When loading a saved model:
 // load the meta graph
 tensorflow::MetaGraphDef* metaGraph = tensorflow::loadMetaGraph("/path/to/simplegraph", 4);
 
-// create a session and use multi-threading
+// create a session and use 4 threads
 tensorflow::Session* session = tensorflow::createSession(metaGraph, "/path/to/simplegraph", 4);
 
 // proceed as usual
@@ -297,7 +299,7 @@ tensorflow::Session* session = tensorflow::createSession(metaGraph, "/path/to/si
 ```
 
 
-##### Logging
+#### Logging
 
 By default, TensorFlow logging is quite verbose. This can be changed via setting the `TF_CPP_MIN_LOG_LEVEL` environment varibale before calling (e.g.) `cmsRun`, or via calling `tensorflow::setLogging(level)` in your code. Log levels:
 
