@@ -1,0 +1,30 @@
+stages:
+  - test
+
+before_script:
+  - set -o pipefail
+  - export CI_HOME="$( pwd )"
+  - git submodule update --init --recursive
+  - export SCRAM_ARCH="$SCRAM_ARCH"
+  - export CMSSW_VERSION="$CMSSW_VERSION"
+  - source /cvmfs/cms.cern.ch/cmsset_default.sh
+  - cd ..
+  - scramv1 project CMSSW $CMSSW_VERSION
+  - cd $CMSSW_VERSION/src
+  - eval `scramv1 runtime -sh`
+  - cp -r $CI_HOME DNN
+  - cd $CI_HOME
+
+test:
+  stage: test
+  tags:
+    - cvmfs
+    - docker
+  variables:
+    SCRAM_ARCH: slc6_amd64_gcc630
+    CMSSW_VERSION: CMSSW_10_1_11
+  script:
+    - cd $CMSSW_BASE/src
+    - 2>&1 scram b runtests | tee log.txt
+    - if [ "$?" != "0" ]; then exit "$?"; fi
+    - if [ ! -z "$( cat log.txt | grep "had ERRORS" )" ]; then exit "1"; fi
