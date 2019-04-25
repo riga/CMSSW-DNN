@@ -1,3 +1,5 @@
+image: gitlab-registry.cern.ch/ci-tools/ci-worker:cc7
+
 stages:
   - test
 
