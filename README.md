@@ -1,6 +1,6 @@
 ## TensorFlow Interface for CMSSW
 
-[![build status](https://gitlab.cern.ch/mrieger/CMSSW-DNN/badges/tf_cc_1.6/build.svg)](https://gitlab.cern.ch/mrieger/CMSSW-DNN/pipelines)
+[![build status](https://gitlab.cern.ch/mrieger/CMSSW-DNN/badges/tf_cc_1.13/build.svg)](https://gitlab.cern.ch/mrieger/CMSSW-DNN/pipelines)
 
 - Main repository & issues: [gitlab.cern.ch/mrieger/CMSSW-DNN](https://gitlab.cern.ch/mrieger/CMSSW-DNN)
 - Code mirror: [github.com/riga/CMSSW-DNN](https://github.com/riga/CMSSW-DNN)
