@@ -1,6 +1,6 @@
 /*
  * HelloWorld test of the TensorFlow interface.
- * Based on TensorFlow C++ API 1.3.
+ * Based on TensorFlow C++ API 1.6.
  * For more info, see https://gitlab.cern.ch/mrieger/CMSSW-DNN.
  *
  * Author: Marcel Rieger
@@ -102,7 +102,7 @@ void testSession::checkAll()
         return;
     }
 
-    // fetch the session 
+    // fetch the session
     Session* session = bundle.session.release();
 
     // prepare inputs
