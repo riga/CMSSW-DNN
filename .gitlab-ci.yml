@@ -21,7 +21,7 @@ test:
     - cvmfs
     - docker
   variables:
-    SCRAM_ARCH: slc6_amd64_gcc630
+    SCRAM_ARCH: slc7_amd64_gcc630
     CMSSW_VERSION: CMSSW_10_1_11
   script:
     - cd $CMSSW_BASE/src
