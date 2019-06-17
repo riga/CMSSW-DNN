@@ -20,7 +20,7 @@ test:
   tags:
     - cvmfs
     - docker
-  image: gitlab-registry.cern.ch/ci-tools/ci-worker:cc6
+  image: gitlab-registry.cern.ch/ci-tools/ci-worker:slc6
   variables:
     SCRAM_ARCH: slc6_amd64_gcc630
     CMSSW_VERSION: CMSSW_10_1_11
