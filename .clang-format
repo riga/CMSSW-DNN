@@ -1,10 +1,18 @@
 ---
-BasedOnStyle: WebKit
-IndentWidth: 4
-ColumnLimit: 0
-BreakBeforeBraces: Allman
-AllowShortFunctionsOnASingleLine: false
+Language: Cpp
+BasedOnStyle: Google
+ColumnLimit: 120
+NamespaceIndentation: All
+SortIncludes: false
+IndentWidth: 2
+AccessModifierOffset: -2
+PenaltyBreakComment: 30
+PenaltyExcessCharacter: 100
+AlignAfterOpenBracket: Align
 AllowShortIfStatementsOnASingleLine: false
 AllowShortLoopsOnASingleLine: false
-NamespaceIndentation: None
----
+BinPackParameters: false
+AlwaysBreakTemplateDeclarations: Yes
+ReflowComments: false
+BinPackArguments: false
+BinPackParameters: false

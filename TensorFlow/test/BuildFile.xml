@@ -1,5 +1,4 @@
 <bin name="testTFHelloWorld" file="testRunner.cpp,testHelloWorld.cc">
-    <use name="tensorflow" />
     <use name="tensorflow-cc" />
     <use name="boost_filesystem" />
     <use name="cppunit" />
@@ -12,7 +11,7 @@
     <use name="cppunit" />
 
     <use name="FWCore/Utilities" />
-    <use name="DNN/TensorFlow" />
+    <use name="PhysicsTools/TensorFlow" />
 </bin>
 
 <bin name="testTFGraphLoading" file="testRunner.cpp,testGraphLoading.cc">
@@ -20,13 +19,23 @@
     <use name="cppunit" />
 
     <use name="FWCore/Utilities" />
-    <use name="DNN/TensorFlow" />
+    <use name="PhysicsTools/TensorFlow" />
 </bin>
 
-<!-- <bin name="testTFPerformance" file="testRunner.cpp,testPerformance.cc">
+<bin name="testTFThreadPools" file="testRunner.cpp,testThreadPools.cc">
     <use name="boost_filesystem" />
     <use name="cppunit" />
 
     <use name="FWCore/Utilities" />
-    <use name="DNN/TensorFlow" />
-</bin> -->
+    <use name="PhysicsTools/TensorFlow" />
+</bin>
+
+<!-- <ifarchitecture name="!_ppc64le_">
+<bin name="testTFAOT" file="testRunner.cpp,testAOT.cc">
+    <flags DNN_NAME="testAOT_add" />
+
+    <use name="cppunit" />
+    <use name="tensorflow-runtime" />
+    <use name="tensorflow-xla_compiled_cpu_function" />
+</bin>
+</ifarchitecture> -->
