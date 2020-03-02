@@ -13,6 +13,27 @@ This interface provides simple and fast access to [TensorFlow](https://www.tenso
 To learn more about TensorFlow 2, see [this tutorial](https://indico.cern.ch/event/882992/contributions/3721506/attachments/1994721/3327402/TensorFlow_2_Workshop_CERN_2020.pdf).
 
 
+### Contents
+
+- [Setup](#setup)
+- [Performance](#performance)
+- [CMSSW versions](#cmssw-versions)
+- [Usage](#usage)
+  - [Constant graphs](#constant-graphs)
+    - [Saving](#saving)
+    - [Loading and evaluation](#loading-and-evaluation)
+  - [`SavedModel` format](#savedmodel-format)
+    - [Saving](#saving-1)
+    - [Loading and evaluation](#loading-and-evaluation-1)
+- [Important notes](#important-notes)
+  - [Keras](#keras)
+  - [`BuildFile.xml`'s](#buildfilexmls)
+  - [TensorFlow in `cmsRun` config files](#tensorflow-in-cmsrun-config-files)
+  - [Multi-threading](#multi-threading)
+  - [Logging](#logging)
+  - [Integration PRs](#integration-prs)
+
+
 ### Setup
 
 The interace is part of the official CMSSW release, located at [PhysicsTools/TensorFlow](https://github.com/cms-sw/cmssw/tree/master/PhysicsTools/TensorFlow). Therefore, this development repository should be set up in a CMSSW environment via
@@ -43,6 +64,8 @@ The CMS software environment evolved since the first working interface version i
 | 9\_3\_X       | C, 1.1.0                     | [tf\_c](/../tree/tf_c)                    |
 | 8\_0\_X       | CPython, 1.1.0               | [tf\_py\_cpython](/../tree/tf_py_cpython) |
 
+Please note that TensorFlow 1.13.0 was not integrated into CMSSW due to issues related version incompatibilities of [Protobuf](https://developers.google.com/protocol-buffers) and/or [Eigen](http://eigen.tuxfamily.org).
+
 
 ### Usage
 
@@ -53,7 +76,7 @@ TensorFlow provides multiple ways to save a computational graph. Depending on wh
 After defining and training a neural network in Python, you typically don't want to continue training within CMSSW. If this is the case, you want to save a [constant graph](#constant-graph). Otherwise, jump to the [`SavedModel` format](#savedmodel-format).
 
 
-#### Constant Graphs
+#### Constant graphs
 
 A constant graph is saved in a single protobuf file. During the saving process, variables are converted to constant tensors, and ops and tensors that are no longer required (cost function, optimizer, etc.) are removed. The memory consumption during evaluation in CMSSW - especially in multi-threaded mode - can greatly benefit from this conversion.
 
@@ -62,6 +85,11 @@ A constant graph is saved in a single protobuf file. During the saving process, 
 
 ```python
 import tensorflow as tf
+
+# for tf v2, fgo into v1 compatibility mode
+if tf.__version__.startswith("2."):
+    tf = tf.compat.v1
+tf.disable_eager_execution()
 
 # define your model here
 x_ = tf.placeholder(tf.float32, [None, 10], name="input")
@@ -77,14 +105,14 @@ sess.run(tf.global_variables_initializer())
 ...
 
 # convert and save it
-from PhysicsTools.TensorFlow.tools import write_constant_graph
-
-outputs = ["output"]  # names of output operations you want to use later
-write_constant_graph(sess, outputs, "/path/to/constantgraph.pb")
+outputs = ["output"] # names of output operations you want to use later
+constant_graph = tf.graph_util.convert_variables_to_constants(
+    sess, sess.graph.as_graph_def(), outputs)
+tf.train.write_graph(constant_graph, "/path/to", "constantgraph.pb", as_text=False)
 ```
 
 
-###### Loading and Evaluation
+###### Loading and evaluation
 
 ```cpp
 #include "PhysicsTools/TensorFlow/interface/TensorFlow.h"
@@ -132,7 +160,7 @@ delete graphDef;
 For more examples, see [`TensorFlow/test/testGraphLoading.cc`](./TensorFlow/test/testGraphLoading.cc).
 
 
-#### `SavedModel` Format
+#### `SavedModel` format
 
 
 TensorFlow's [``SavedModel`` serialization format](https://github.com/tensorflow/tensorflow/blob/master/tensorflow/python/saved_model/README.md) is a more generic
@@ -142,6 +170,11 @@ TensorFlow's [``SavedModel`` serialization format](https://github.com/tensorflow
 
 ```python
 import tensorflow as tf
+
+# for tf v2, fgo into v1 compatibility mode
+if tf.__version__.startswith("2."):
+    tf = tf.compat.v1
+tf.disable_eager_execution()
 
 # define your model here
 x_ = tf.placeholder(tf.float32, [None, 10], name="input")
@@ -165,7 +198,7 @@ builder.save()
 The tag passed to `add_meta_graph_and_variables` serves as an identifier for your graph in the saved file which potentially can contain multiple graphs. `tf.saved_model.tag_constants.SERVING` ("serve") is a commonly used tag, but you are free to use any value here.
 
 
-###### Loading and Evaluation
+###### Loading and evaluation
 
 ```cpp
 #include "PhysicsTools/TensorFlow/interface/TensorFlow.h"
@@ -216,7 +249,7 @@ delete graphDef;
 For more examples, see [`test/testMetaGraphLoading.cc`](./TensorFlow/test/testMetaGraphLoading.cc).
 
 
-### Important Notes
+### Important notes
 
 #### Keras
 
@@ -224,6 +257,12 @@ As Keras can be backed by TensorFlow, the model saving process is identical:
 
 ```python
 import tensorflow as tf
+
+# for tf v2, fgo into v1 compatibility mode
+if tf.__version__.startswith("2."):
+    tf = tf.compat.v1
+tf.disable_eager_execution()
+
 sess = tf.Session()
 
 from keras import backend as K
@@ -233,10 +272,11 @@ K.set_session(sess)
 ...
 
 # save at as a constant graph
-from PhysicsTools.TensorFlow.tools import write_constant_graph
-
 outputs = [...]
-write_constant_graph(sess, outputs, "/path/to/constantgraph.pb")
+constant_graph = tf.graph_util.convert_variables_to_constants(
+    sess, sess.graph.as_graph_def(), outputs)
+tf.train.write_graph(constant_graph, "/path/to", "constantgraph.pb", as_text=False)
+
 ```
 
 
