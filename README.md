@@ -57,14 +57,14 @@ The CMS software environment evolved since the first working interface version i
 | CMSSW version | TF API & version (externals) |              Interface branch             |
 | ------------- | ---------------------------- | ----------------------------------------- |
 | 11\_1\_X      | C++, 2.1.0                   | [tf\_cc\_2.1](/../tree/tf_cc_2.1)         |
-| 10\_6\_X      | C++, 1.13.0                  | [tf\_cc\_1.13](/../tree/tf_cc_1.13)       |
+| 10\_6\_X      | backport coming soon         |                                           |
 | 10\_2\_X      | C++, 1.6.0                   | [tf\_cc\_1.6](/../tree/tf_cc_1.6)         |
 | 10\_1\_X      | C++, 1.5.0                   | [tf\_cc\_1.5](/../tree/tf_cc_1.5)         |
 | 9\_4\_X       | C++, 1.3.0                   | [tf\_cc\_1.3](/../tree/tf_cc_1.3)         |
 | 9\_3\_X       | C, 1.1.0                     | [tf\_c](/../tree/tf_c)                    |
 | 8\_0\_X       | CPython, 1.1.0               | [tf\_py\_cpython](/../tree/tf_py_cpython) |
 
-Please note that TensorFlow 1.13.0 was not integrated into CMSSW due to issues related version incompatibilities of [Protobuf](https://developers.google.com/protocol-buffers) and/or [Eigen](http://eigen.tuxfamily.org).
+Please note that TensorFlow versions above 1.6.0 were not integrated into CMSSW due to issues related version incompatibilities of [Protobuf](https://developers.google.com/protocol-buffers) and/or [Eigen](http://eigen.tuxfamily.org).
 
 
 ### Usage
